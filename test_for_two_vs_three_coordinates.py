@@ -21,7 +21,7 @@ def f (a):
     return sum((((x-x0)**2 + (y-y0)**2 + (z-z0)**2)**.5-d)**2)/len(x)
 
 def find_the_hole ():
-    xopt = fmin_tnc(f,[x0,y0,z0],approx_grad=1,disp=0)[0].tolist()
+    xopt = fmin_tnc(f,[x0,y0,z0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
     return xopt
 
 
@@ -75,7 +75,7 @@ def f (a):
     return sum((((x-x0)**2 + (y-y0)**2)**.5-d)**2)/len(x)
 
 def find_the_hole ():
-    xopt = fmin_tnc(f,[x0,y0],approx_grad=1,disp=0)[0].tolist()
+    xopt = fmin_tnc(f,[x0,y0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
     return xopt
 
 
