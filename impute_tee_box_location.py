@@ -41,8 +41,8 @@ for u,i in enumerate(uCRHtps):
     rand_shot = subset[subset['Shot']==1][['X Coordinate','Y Coordinate','Z Coordinate']].values[rand_ind,:].tolist()[0]
     x0,y0,z0 = rand_shot[0],rand_shot[1],rand_shot[2]
     a = find_the_tee_box()
-    subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0]                   + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
-    subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset['dist_w_impute'].values[j] -                   subset['Distance'].values[j]/12) if subset['Shot'].values[j]==1 else 0 for j in range(subset.shape[0])]))
+    subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0] + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
+    subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset['dist_w_impute'].values[j] - subset['Distance'].values[j]/12) if subset['Shot'].values[j]==1 else 0 for j in range(subset.shape[0])]))
     mean_err = subset[subset['dist_diff']>0]['dist_diff'].mean()
     std_err = subset[subset['dist_diff']>0]['dist_diff'].std()
     c=0
@@ -62,8 +62,8 @@ for u,i in enumerate(uCRHtps):
         rand_shot = subset[subset['Shot']==1][['X Coordinate','Y Coordinate','Z Coordinate']].values[rand_ind,:].tolist()[0]
         x0,y0,z0 = rand_shot[0],rand_shot[1],rand_shot[2]
         a = find_the_tee_box()
-        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0]                   + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
-        subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset['dist_w_impute'].values[j] -                   subset['Distance'].values[j]/12) if subset['Shot'].values[j]==1 else 0 for j in range(subset.shape[0])]))
+        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0] + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
+        subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset['dist_w_impute'].values[j] - subset['Distance'].values[j]/12) if subset['Shot'].values[j]==1 else 0 for j in range(subset.shape[0])]))
         mean_err = subset[subset['dist_diff']>0]['dist_diff'].mean()
         std_err = subset[subset['dist_diff']>0]['dist_diff'].std()
     
