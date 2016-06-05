@@ -5,20 +5,19 @@ from scipy.optimize import fmin_tnc
 import eliminate_holes_with_issues as e
 
 
-
 def get_hole_and_tee_box_locs (y):
     def f (a):
-        x0,y0,z0 = a[0],a[1],a[2]
-        return sum((((x-x0)**2 + (y-y0)**2 + (z-z0)**2)**.5-d)**2)/len(x)
+        x0,y0 = a[0],a[1]
+        return sum((((x-x0)**2 + (y-y0)**2)**.5-d)**2)/len(x)
 
     def find_the_hole ():
-        xopt = fmin_tnc(f,[x0,y0,z0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
+        xopt = fmin_tnc(f,[x0,y0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
         return xopt
 
     data = e.make_df(y)
 
     #unique Course-Round-Hole Tuples
-    uCRHtps = list(itertools.product(np.unique(data.Course_Name),np.unique(data.Round),np.unique(data.Hole)))
+    uCRHtps = list(itertools.product(pd.unique(data.Course_Name),pd.unique(data.Round),pd.unique(data.Hole)))
 
     # coordinates of hole are not given. must be imputed.
     # based on previous test, x,y, and z coordinates are all used for distance
@@ -32,7 +31,6 @@ def get_hole_and_tee_box_locs (y):
     hole_locs, tee_box_locs = {}, {}
     zerocoordsnonzerodist, lackofdists, outofsynchwithclosestshot, over2stdshole, wholeholeout, maxholetoobig, over2stdteebox, wholeteeboxout, maxteeboxtoobig = 0,0,0,0,0,0,0,0,0
     for u,i in enumerate(uCRHtps):
-        print i
         subset = data[(data.Course_Name==i[0]) & (data.Round==int(i[1])) & (data.Hole==int(i[2]))]
         shots_looked_at += subset.shape[0]
         zerocoordsnonzerodist += sum([1 for j in subset[(subset.Distance_to_Hole_after_the_Shot!=0) & ((subset.X_Coordinate==0) | (subset.Y_Coordinate==0) | (subset.Z_Coordinate==0))][id_cols].as_matrix().tolist()])
@@ -49,12 +47,10 @@ def get_hole_and_tee_box_locs (y):
         d = subset[subset.Distance_to_Hole_after_the_Shot!=0].Distance_to_Hole_after_the_Shot.values/12.0
         x = subset[subset.Distance_to_Hole_after_the_Shot!=0].X_Coordinate.values
         y = subset[subset.Distance_to_Hole_after_the_Shot!=0].Y_Coordinate.values
-        z = subset[subset.Distance_to_Hole_after_the_Shot!=0].Z_Coordinate.values
         x0 = subset[subset.Distance_to_Hole_after_the_Shot!=0].X_Coordinate.values[0] ##assume that closest ball recorded to hole does not have an error
         y0 = subset[subset.Distance_to_Hole_after_the_Shot!=0].Y_Coordinate.values[0]
-        z0 = subset[subset.Distance_to_Hole_after_the_Shot!=0].Z_Coordinate.values[0]
         d0 = subset[subset.Distance_to_Hole_after_the_Shot!=0].Distance_to_Hole_after_the_Shot.values[0]/12.0
-        subset.insert(len(subset.columns),'dist_to_shot_nearest_to_hole',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-x0)**2 + (y-y0)**2 + (z-z0)**2)**.5).tolist()))
+        subset.insert(len(subset.columns),'dist_to_shot_nearest_to_hole',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-x0)**2 + (y-y0)**2)**.5).tolist()))
         # keep track of hole's with shots that have distances that are inconsistant with the coordinates
         bad_subset = subset[subset.dist_to_shot_nearest_to_hole>subset.Distance_to_Hole_after_the_Shot.values+d0]
         outofsynchwithclosestshot += sum([1 for j in bad_subset[id_cols].as_matrix().tolist()])
@@ -64,10 +60,9 @@ def get_hole_and_tee_box_locs (y):
         d = subset[subset.Distance_to_Hole_after_the_Shot!=0].Distance_to_Hole_after_the_Shot.values/12.0
         x = subset[subset.Distance_to_Hole_after_the_Shot!=0].X_Coordinate.values
         y = subset[subset.Distance_to_Hole_after_the_Shot!=0].Y_Coordinate.values
-        z = subset[subset.Distance_to_Hole_after_the_Shot!=0].Z_Coordinate.values
         a = find_the_hole()
 
-        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
+        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-a[0])**2 + (y-a[1])**2)**.5).tolist()))
         subset.insert(len(subset.columns),'dist_diff', np.absolute(subset.dist_w_impute.values - subset.Distance_to_Hole_after_the_Shot.values/12.0))
         mean_err = subset[subset.Distance_to_Hole_after_the_Shot!=0].dist_diff.mean()
         std_err = subset[subset.Distance_to_Hole_after_the_Shot!=0].dist_diff.std()
@@ -85,9 +80,8 @@ def get_hole_and_tee_box_locs (y):
             d = subset[subset.Distance_to_Hole_after_the_Shot!=0].Distance.values/12.0
             x = subset[subset.Distance_to_Hole_after_the_Shot!=0].X_Coordinate.values
             y = subset[subset.Distance_to_Hole_after_the_Shot!=0].Y_Coordinate.values
-            z = subset[subset.Distance_to_Hole_after_the_Shot!=0].Z_Coordinate.values
             a = find_the_hole()
-            subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
+            subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Distance_to_Hole_after_the_Shot==0].shape[0] + (((x-a[0])**2 + (y-a[1])**2))**.5.tolist()))
             subset.insert(len(subset.columns),'dist_diff', np.absolute(subset.dist_w_impute.values - subset.Distance_to_Hole_after_the_Shot.values/12.0))
             mean_err = subset[subset.dist_diff>0].dist_diff.mean()
             std_err = subset[subset.dist_diff>0].dist_diff.std()
@@ -102,20 +96,19 @@ def get_hole_and_tee_box_locs (y):
             maxholetoobig += sum([1 for j in subset[subset.dist_diff>10][id_cols].as_matrix().tolist()])
             tups_to_remove.update([tuple(j) for j in subset[subset.dist_diff>10][id_cols].as_matrix().tolist()])
             subset = subset.drop(subset[subset.dist_diff>1].index,axis=0)
-        subset.drop('dist_w_impute',axis=1,inplace=True)
-        subset.drop('dist_diff',axis=1,inplace=True)
+        subset = subset.drop('dist_w_impute',axis=1)
+        subset = subset.drop('dist_diff',axis=1)
         hole_locs[i] = a
 
         subset = subset.sort_values('Shot',ascending=False)
         d = subset[subset.Shot==1].Distance.values/12.0
         x = subset[subset.Shot==1].X_Coordinate.values
         y = subset[subset.Shot==1].Y_Coordinate.values
-        z = subset[subset.Shot==1].Z_Coordinate.values
         rand_ind = np.random.choice(range(subset[subset.Shot==1].shape[0]),size=1)
-        rand_shot = subset[subset.Shot==1][['X_Coordinate','Y_Coordinate','Z_Coordinate']].values[rand_ind,:].tolist()[0]
-        x0,y0,z0 = rand_shot[0],rand_shot[1],rand_shot[2]
+        rand_shot = subset[subset.Shot==1][['X_Coordinate','Y_Coordinate']].values[rand_ind,:].tolist()[0]
+        x0,y0 = rand_shot[0],rand_shot[1]
         b = find_the_hole()
-        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0] + (((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist()))
+        subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset['Shot']!=1].shape[0] + (((x-a[0])**2 + (y-a[1])**2)**.5).tolist()))
         subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset.dist_w_impute.values[j] - subset.Distance.values[j]/12.0) if subset.Shot.values[j]==1 else 0 for j in range(subset.shape[0])]))
         mean_err = subset[subset.dist_diff>0].dist_diff.mean()
         std_err = subset[subset.dist_diff>0].dist_diff.std()
@@ -133,12 +126,11 @@ def get_hole_and_tee_box_locs (y):
             d = subset[subset.Shot==1].Distance.values/12.0
             x = subset[subset.Shot==1].X_Coordinate.values
             y = subset[subset.Shot==1].Y_Coordinate.values
-            z = subset[subset.Shot==1].Z_Coordinate.values
             rand_ind = np.random.choice(range(subset[subset.Shot==1].shape[0]),size=1)
-            rand_shot = subset[subset.Shot==1][['X_Coordinate','Y_Coordinate','Z_Coordinate']].values[rand_ind,:].tolist()[0]
-            x0,y0,z0 = rand_shot[0],rand_shot[1],rand_shot[2]
+            rand_shot = subset[subset.Shot==1][['X_Coordinate','Y_Coordinate']].values[rand_ind,:].tolist()[0]
+            x0,y0 = rand_shot[0],rand_shot[1]
             b = find_the_hole()
-            subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Shot!=1].shape[0] + (((x-b[0])**2 + (y-b[1])**2 + (z-b[2])**2)**.5).tolist()))
+            subset.insert(len(subset.columns),'dist_w_impute',np.array([0]*subset[subset.Shot!=1].shape[0] + (((x-b[0])**2 + (y-b[1])**2)**.5).tolist()))
             subset.insert(len(subset.columns),'dist_diff',np.array([abs(subset.dist_w_impute.values[j] - subset.Distance.values[j]/12) if subset.Shot.values[j]==1 else 0 for j in range(subset.shape[0])]))
             mean_err = subset[subset.dist_diff>0].dist_diff.mean()
             std_err = subset[subset.dist_diff>0].dist_diff.std()
@@ -151,7 +143,6 @@ def get_hole_and_tee_box_locs (y):
             print u, 'tee box max_err = ', max_err
             maxteeboxtoobig += sum([1 for j in subset[subset.dist_diff>720][id_cols].as_matrix().tolist()])
             tups_to_remove.update([tuple(j) for j in subset[subset.dist_diff>720][id_cols].as_matrix().tolist()])
-            subset = subset.drop(subset[subset.dist_diff>1].index,axis=0)
 
         uCRHs+=1
 
@@ -168,6 +159,6 @@ def get_hole_and_tee_box_locs (y):
     print 'maxteeboxtoobig = ', maxteeboxtoobig
     print 'total = ', len(tups_to_remove)
     print shots_looked_at
-    return (a,b)
+    return (hole_locs,tee_box_locs,tups_to_remove)
 
-a,b = get_hole_and_tee_box_locs(2007)
+a,b,c = get_hole_and_tee_box_locs(2007)

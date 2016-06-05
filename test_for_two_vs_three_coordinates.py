@@ -1,118 +1,57 @@
 import pandas as pd
-import numpy as np
 import itertools
-from scipy.optimize import fmin_tnc
-
 import eliminate_holes_with_issues as e
-data = e.make_df(2004)
-
-#unique Course-Round-Hole Tuples
-uCRHtps = list(itertools.product(np.unique(data.Course_Name),np.unique(data.Round),np.unique(data.Hole)))
 
 
-# coordinates of hole are not given. must be imputed.
-# does the distance use the x,y, and z coordinates or just the x and y coordinates?
-# test: first find the hole using the x,y, and z coordinates and record the average difference between calculated hole
-# location and ball and recorded distance. then do the same using just the x and y coodinates. see which is better.
+def dist_to_shot_nearest_to_hole_in (subset,n_coor):
+    """ Takes in a sorted subset of data and returns a numpy array with the
+    distance from each shot to the closest recorded shot in inches
+
+    subset - pandas DataFrame
+    n_coor - int (either 2 for x and y coordinates or 3 for x,y, and z coordinates)
+    """
+    x_coors = subset.X_Coordinate.values
+    y_coors = subset.Y_Coordinate.values
+    cl_sh_x = subset.X_Coordinate.values[0]
+    cl_sh_y = subset.Y_Coordinate.values[0]
+    if n_coor==2:
+        return ((x_coors-cl_sh_x)**2 + (y_coors-cl_sh_y)**2)**.5 * 12.0
+    else:
+        z_coors = subset.Z_Coordinate.values
+        cl_sh_z = subset.Z_Coordinate.values[0]
+        return ((x_coors-cl_sh_x)**2 + (y_coors-cl_sh_y)**2 + (z_coors-cl_sh_z)**2)**.5 * 12.0
 
 
-def f (a):
-    x0,y0,z0 = a[0],a[1],a[2]
-    return sum((((x-x0)**2 + (y-y0)**2 + (z-z0)**2)**.5-d)**2)/len(x)
+two_vesus_three = [[0,0,0] for _ in range(14)]
 
-def find_the_hole ():
-    xopt = fmin_tnc(f,[x0,y0,z0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
-    return xopt
+for year in range(2003,2017):    
+    data = e.make_df(year,verbose=False)
+    print year
+    #unique Course-Round-Hole Tuples
+    uCRHtps = list(itertools.product(pd.unique(data.Course_Name),pd.unique(data.Round),pd.unique(data.Hole)))
 
+    for u,i in enumerate(uCRHtps):
+        if u%1000==0:
+            print u
+        subset = data[(data.Course_Name==i[0]) & (data.Round==int(i[1])) & (data.Hole==int(i[2])) &  \
+                (data.Distance_to_Hole_after_the_Shot!=0) & (data.X_Coordinate!=0) & (data.Y_Coordinate!=0) & (data.Z_Coordinate!=0)]
+        if subset.shape[0] == 0:
+            continue
+        subset = subset.sort_values('Distance_to_Hole_after_the_Shot')
+        
+        ## compare which distance is most compatible with the data based on recorded distance to hole
+        d0 = subset.Distance_to_Hole_after_the_Shot.values[0]
+        dist_to_shot_nearest_to_hole = dist_to_shot_nearest_to_hole_in(subset,2)
+        n_badshots2 = subset[dist_to_shot_nearest_to_hole > subset.Distance_to_Hole_after_the_Shot.values + d0 + 1.0].shape[0]
+        dist_to_shot_nearest_to_hole = dist_to_shot_nearest_to_hole_in(subset,3)
+        n_badshots3 = subset[dist_to_shot_nearest_to_hole > subset.Distance_to_Hole_after_the_Shot.values + d0 + 1.0].shape[0]
 
-mean_errs,median_errs,max_errs = [],[],[]
-shots_removed = 0
-#finding the coordinates of the hole
-for u,i in enumerate(uCRHtps):
-    subset = data[(data.Course_Name==i[0]) & (data.Round==int(i[1])) & (data.Hole==int(i[2])) &  \
-            (data.Distance_to_Hole_after_the_Shot!=0) & (data.X_Coordinate!=0) & (data.Y_Coordinate!=0) & (data.Z_Coordinate!=0)]
-    if subset.shape[0] == 0:
-        continue
-    d = subset.Distance_to_Hole_after_the_Shot.values/12.0
-    x = subset.X_Coordinate.values
-    y = subset.Y_Coordinate.values
-    z = subset.Z_Coordinate.values
-    sorted_subset = subset.sort_values('Distance_to_Hole_after_the_Shot')
-    x0 = sorted_subset.X_Coordinate.values[0] ##assume that closest ball recorded to hole does not have an error
-    y0 = sorted_subset.Y_Coordinate.values[0]
-    z0 = sorted_subset.Z_Coordinate.values[0]
-    d0 = sorted_subset.Distance_to_Hole_after_the_Shot.values[0]
-    subset.insert(len(subset.columns),'dist_to_shot_nearest_to_hole',((x-x0)**2 + (y-y0)**2 + (z-z0)**2)**.5)
-    before = subset.shape[0]
-    # remove shots for which the distance to the closest shot to the hole is greater than the sum of the distance to the hole
-    # after the shot and the distance to the hole from the closest recorded shot
-    subset = subset[subset.dist_to_shot_nearest_to_hole <= subset.Distance_to_Hole_after_the_Shot.values + d0]
-    after = subset.shape[0]
-    shots_removed += before-after
-    d = subset.Distance_to_Hole_after_the_Shot.values/12.0
-    x = subset.X_Coordinate.values
-    y = subset.Y_Coordinate.values
-    z = subset.Z_Coordinate.values
-    a = find_the_hole()
-    subset.insert(len(subset.columns),'dist_w_impute',np.array(((x-a[0])**2 + (y-a[1])**2 + (z-a[2])**2)**.5).tolist())
-    subset.insert(len(subset.columns),'dist_diff',np.absolute(subset.dist_w_impute.values - subset.Distance_to_Hole_after_the_Shot.values/12.0))
-    mean_err = subset.dist_diff.mean()
-    max_err = subset.dist_diff.max()
-    median_err = subset.dist_diff.median()
-    mean_errs.append(mean_err)
-    max_errs.append(max_err)
-    median_errs.append(median_err)
-
-print 'mean mean err = ', sum(mean_errs)/len(mean_errs)
-print 'mean max err = ', sum(max_errs)/len(max_errs)
-print 'mean median_err = ', sum(median_errs)/len(median_errs)
-print 'shots_removed = ', shots_removed
-
-# now distance with just x and y coordinates
-def f (a):
-    x0,y0 = a[0],a[1]
-    return sum((((x-x0)**2 + (y-y0)**2)**.5-d)**2)/len(x)
-
-def find_the_hole ():
-    xopt = fmin_tnc(f,[x0,y0],approx_grad=1,maxfun=1000,disp=0)[0].tolist()
-    return xopt
-
-mean_errs,median_errs,max_errs = [],[],[]
-shots_removed = 0
-#finding the coordinates of the hole using just x and y coordinates
-for u,i in enumerate(uCRHtps[0:2000]):
-    subset = data[(data.Course_Name==i[0]) & (data.Round==int(i[1])) & (data.Hole==int(i[2])) & \
-             (data.Distance_to_Hole_after_the_Shot!=0) & (data.X_Coordinate!=0) & (data.Y_Coordinate!=0) & (data.Z_Coordinate!=0)]
-    if subset.shape[0] == 0:
-        continue
-    d = subset.Distance_to_Hole_after_the_Shot.values/12.0
-    x = subset.X_Coordinate.values
-    y = subset.Y_Coordinate.values
-    sorted_subset = subset.sort_values('Distance_to_Hole_after_the_Shot')
-    x0 = sorted_subset.X_Coordinate.values[0] ##assume that closest ball recorded to hole does not have an error
-    y0 = sorted_subset.Y_Coordinate.values[0]
-    d0 = sorted_subset.Distance_to_Hole_after_the_Shot.values[0]
-    subset.insert(len(subset.columns),'dist_to_shot_nearest_to_hole',((x-x0)**2 + (y-y0)**2)**.5)
-    before = subset.shape[0]
-    # remove shots for which the distance to the closest shot to the hole is greater than the sum of the distance to the hole
-    # after the shot and the distance to the hole from the closest recorded shot
-    subset = subset[subset.dist_to_shot_nearest_to_hole <= subset.Distance_to_Hole_after_the_Shot.values + d0]
-    after = subset.shape[0]
-    shots_removed += before-after
-    d = subset.Distance_to_Hole_after_the_Shot.values/12.0
-    x = subset.X_Coordinate.values
-    y = subset.Y_Coordinate.values
-    a = find_the_hole()
-    subset.insert(len(subset.columns),'dist_w_impute',np.array(((x-a[0])**2 + (y-a[1])**2)**.5).tolist())
-    subset.insert(len(subset.columns),'dist_diff',np.absolute(subset.dist_w_impute.values - subset.Distance_to_Hole_after_the_Shot.values/12.0))
-    mean_err = subset.dist_diff.mean()
-    max_err = subset.dist_diff.max()
-    median_err = subset.dist_diff.median()
-    mean_errs.append(mean_err)
-    max_errs.append(max_err)
-    median_errs.append(median_err)
-
-print 'mean mean err = ', sum(mean_errs)/len(mean_errs)
-print 'mean max err = ', sum(max_errs)/len(max_errs)
-print 'mean median_err = ', sum(median_errs)/len(median_errs)
-print 'shots_removed = ', shots_removed
+        if n_badshots2>n_badshots3:
+            two_vesus_three[year-2003][0] += 1
+        elif n_badshots2==n_badshots3:
+            two_vesus_three[year-2003][1] += 1
+        else:
+            two_vesus_three[year-2003][2] += 1
+    print 'Number of Holes with more inconsistant shots using x,y coordinates: ', two_vesus_three[year-2003][0]
+    print 'Number of Holes with more inconsistant shote using x,y, and z coordinates: ', two_vesus_three[year-2003][2]
+    print 'Number of Hole with the same number of inconsistant shots either way: ', two_vesus_three[year-2003][1]
