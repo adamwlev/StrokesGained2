@@ -182,20 +182,70 @@ class Impute_a_Hole (object):
             self.tee_box_y = tee_box_y
             return True
 
+    def set_z_of_closest(self):
+        self.sorted_df = self.df[self.df.Distance_to_Hole_after_the_Shot!=0].sort_values('Distance_to_Hole_after_the_Shot')
+        self.z_of_closest = self.sorted_df.Z_Coordinate.values[0]
 
-data = e.make_df(2003)
+year=2003
+data = e.make_df(year)
 uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
 hole_locations = {}
 tee_box_locations = {}
+z_of_closest = {}
 tuples_to_remove = set()
 for tup in uCRHtps:
     hole = Impute_a_Hole(tup[0],tup[1],tup[2],data)
     print tup
     print 'Number of shots with zero coordinates but nonzero distances: %d' % (hole.filter_out_shots_with_zero_coordinates_but_nonzero_distances(),)
     print 'Number of shots with zero distances but nonzero coordiantes: %d' % (hole.filter_out_shots_with_zero_distances_from_hole_but_not_last_shot(),)
-    if hole.are_there_any_non_zero_distances_from_the_hole_after_the_shot():
-        if hole.find_the_hole(3.5,10):
-            hole_locations[tup] = (hole.hole_x,hole.hole_y)
-            if hole.find_the_tee_box(310,720):
-                tee_box_locations[tup] = (hole.tee_box_x,hole.tee_box_y)
+    if hole.are_there_any_non_zero_distances_from_the_hole_after_the_shot() and hole.find_the_hole(3.5,10) and hole.find_the_tee_box(310,720):
+        hole_locations[(year,)+tup] = (hole.hole_x,hole.hole_y)
+        tee_box_locations[(year,)+tup] = (hole.tee_box_x,hole.tee_box_y)
+        hole.set_z_of_closest()
+        z_of_closest[(year,)+tup] = hole.z_of_closest
     tuples_to_remove.update(hole.tuples_to_remove)
+
+# f = open('hole_locations.csv','w')
+# for key in hole_locations:
+#     f.write(','.join(map(str,key))+' - ' + ','.join(map(str,hole_locations[key]))+'\n')
+# f.close()
+
+# f = open('tee_box_locations.csv','w')
+# for key in tee_box_locations:
+#     f.write(','.join(map(str,key))+' - ' + ','.join(map(str,tee_box_locations[key]))+'\n')
+# f.close()
+
+# f = open('z_of_closest.csv','w')
+# for key in z_of_closest:
+#     f.write(','.join(map(str,key))+' - ' + str(z_of_closest[key])+'\n')
+# f.close()
+
+before = len(data)
+inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].as_matrix().tolist()) if tuple(i) not in tuples_to_remove]
+data = data.iloc[inds]
+after = len(data)
+shrinkage = float(before-after)/before * 100
+print 'Data has been shrunk by %g percent.' % shrinkage
+
+
+data.insert(len(data.columns),'Shots_taken_after',data.Hole_Score-data.Shot)
+data.sort_values('Shots_taken_after')
+cols = ['Year','Course_#','Round','Hole']
+print data[data.Shots_taken_after==0][cols].as_matrix().tolist()
+data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(map(int,tup))][0] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+                +data[data.Shots_taken_after>0].X_Coordinate.tolist())
+data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(map(int,tup))][1] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+                +data[data.Shots_taken_after>0].Y_Coordinate.tolist())
+data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(map(int,tup))] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+                +data[data.Shots_taken_after>0].Z_Coordinate.tolist())
+data.sort_values('Shot')
+cols2 = ['Course_#','Player_#','Hole','Round','Shot']
+data.insert(len(data.columns),'Came_from_X',[tee_box_locations[tuple(map(int,tup))][0] for tup in data[data.Shot==1][cols].as_matrix().tolist()]
+                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
+                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].X_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])
+data.insert(len(data.columns),'Came_from_Y',[tee_box_locations[tuple(map(int,tup))][1] for tup in data[data.Shot==1][cols].as_matrix().tolist()]
+                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
+                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].Y_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])
+data.insert(len(data.columns),'Came_from_Z',[np.nan for _ in xrange(len(data[data.Shot==1]))]
+                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
+                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].Z_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])

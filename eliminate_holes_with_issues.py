@@ -21,9 +21,9 @@ def make_df (y,verbose=True):
     data.Z_Coordinate = pd.to_numeric(data.Z_Coordinate)
     
     cols = ['Year','Course_#','Player_#','Round','Hole'] 
-    problems = set([tuple(i) for i in data[data.Shot>data.Hole_Score][cols].as_matrix().tolist()])
-    problems.update([tuple(i) for i in data[(data.Shot!=data.Hole_Score) & ((data.X_Coordinate==0) | (data.Y_Coordinate==0) | \
-                                         (data.Z_Coordinate==0))][cols].as_matrix().tolist()])
+    problems = set(tuple(i) for i in data[data.Shot>data.Hole_Score][cols].as_matrix().tolist())
+    problems.update(tuple(i) for i in data[(data.Shot!=data.Hole_Score) & ((data.X_Coordinate==0) | (data.Y_Coordinate==0) | \
+                                         (data.Z_Coordinate==0))][cols].as_matrix().tolist())
     inds = [u for u,i in enumerate(data[cols].as_matrix().tolist()) if tuple(i) not in problems]
     data = data.iloc[inds]
     after = len(data)

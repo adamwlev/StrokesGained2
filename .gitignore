@@ -2,3 +2,4 @@
 data/**
 simplepython.tpl
 *.pyc
+*.csv
