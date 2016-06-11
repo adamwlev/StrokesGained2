@@ -187,7 +187,7 @@ class Impute_a_Hole (object):
         self.z_of_closest = self.sorted_df.Z_Coordinate.values[0]
 
 year=2003
-data = e.make_df(year)
+data = e.make_df(year,verbose=False)
 uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
 hole_locations = {}
 tee_box_locations = {}
@@ -205,20 +205,6 @@ for tup in uCRHtps:
         z_of_closest[(year,)+tup] = hole.z_of_closest
     tuples_to_remove.update(hole.tuples_to_remove)
 
-# f = open('hole_locations.csv','w')
-# for key in hole_locations:
-#     f.write(','.join(map(str,key))+' - ' + ','.join(map(str,hole_locations[key]))+'\n')
-# f.close()
-
-# f = open('tee_box_locations.csv','w')
-# for key in tee_box_locations:
-#     f.write(','.join(map(str,key))+' - ' + ','.join(map(str,tee_box_locations[key]))+'\n')
-# f.close()
-
-# f = open('z_of_closest.csv','w')
-# for key in z_of_closest:
-#     f.write(','.join(map(str,key))+' - ' + str(z_of_closest[key])+'\n')
-# f.close()
 
 before = len(data)
 inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].as_matrix().tolist()) if tuple(i) not in tuples_to_remove]
@@ -231,21 +217,19 @@ print 'Data has been shrunk by %g percent.' % shrinkage
 data.insert(len(data.columns),'Shots_taken_after',data.Hole_Score-data.Shot)
 data.sort_values('Shots_taken_after')
 cols = ['Year','Course_#','Round','Hole']
-print data[data.Shots_taken_after==0][cols].as_matrix().tolist()
-data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(map(int,tup))][0] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(tup)][0] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
                 +data[data.Shots_taken_after>0].X_Coordinate.tolist())
-data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(map(int,tup))][1] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(tup)][1] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
                 +data[data.Shots_taken_after>0].Y_Coordinate.tolist())
-data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(map(int,tup))] for tup in data[data.Shots_taken_after==0][cols].as_matrix().tolist()]
+data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(tup)] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
                 +data[data.Shots_taken_after>0].Z_Coordinate.tolist())
 data.sort_values('Shot')
+all_cols = ['Course_#','Player_#','Hole','Round','Shot','X_Coordinate','Y_Coordinate','Z_Coordinate']
 cols2 = ['Course_#','Player_#','Hole','Round','Shot']
-data.insert(len(data.columns),'Came_from_X',[tee_box_locations[tuple(map(int,tup))][0] for tup in data[data.Shot==1][cols].as_matrix().tolist()]
-                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
-                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].X_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])
-data.insert(len(data.columns),'Came_from_Y',[tee_box_locations[tuple(map(int,tup))][1] for tup in data[data.Shot==1][cols].as_matrix().tolist()]
-                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
-                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].Y_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])
+my_big_dict = {tuple(tup[0:5]):tuple(tup[5:8]) for tup in data[all_cols].values.tolist()}
+data.insert(len(data.columns),'Came_from_X',[tee_box_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
+                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][0] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+data.insert(len(data.columns),'Came_from_Y',[tee_box_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
+                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][1] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
 data.insert(len(data.columns),'Came_from_Z',[np.nan for _ in xrange(len(data[data.Shot==1]))]
-                +[data[(data['Course_#']==int(tup[0])) & (data['Player_#']==int(tup[1])) & (data['Hole']==int(tup[2]))
-                   & (data['Round']==int(tup[3])) & (data['Shot']==int(tup[4])-1)].Z_Coordinate for tup in data[data.Shot!=1][cols2].as_matrix().tolist()])
+                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][2] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
