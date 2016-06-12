@@ -38,7 +38,7 @@ class Impute_a_Hole (object):
     def filter_out_shots_with_zero_coordinates_but_nonzero_distances(self):
         """Removes said shots. Records the Player-Hole-Round tuples that have said shots."""
         self.tuples_to_remove.update(tuple(j) for j in self.df[(self.df.Distance_to_Hole_after_the_Shot!=0) & 
-            ((self.df.X_Coordinate==0) | (self.df.Y_Coordinate==0) | (self.df.Z_Coordinate==0))][Impute_a_Hole.id_cols].as_matrix().tolist())
+            ((self.df.X_Coordinate==0) | (self.df.Y_Coordinate==0) | (self.df.Z_Coordinate==0))][Impute_a_Hole.id_cols].values.astype(int).tolist())
         size = len(self.df[(self.df.Distance_to_Hole_after_the_Shot!=0) & 
             ((self.df.X_Coordinate==0) | (self.df.Y_Coordinate==0) | (self.df.Z_Coordinate==0))])
         self.df = self.df.drop(self.df[(self.df.Distance_to_Hole_after_the_Shot!=0) & 
@@ -48,10 +48,9 @@ class Impute_a_Hole (object):
     def filter_out_shots_with_zero_distances_from_hole_but_not_last_shot(self):
         """Removes said shots. Records the Player-Hole-Round tuples that have said shots."""
         self.tuples_to_remove.update(tuple(j) for j in self.df[(self.df.Distance_to_Hole_after_the_Shot==0) & 
-            (self.df.Shot!=self.df.Hole_Score)][Impute_a_Hole.id_cols].as_matrix().tolist())
+            (self.df.Shot!=self.df.Hole_Score)][Impute_a_Hole.id_cols].values.astype(int).tolist())
         size = len(self.df[(self.df.Distance_to_Hole_after_the_Shot==0) & (self.df.Shot!=self.df.Hole_Score)])
         self.df = self.df.drop(self.df[(self.df.Distance_to_Hole_after_the_Shot==0) & (self.df.Shot!=self.df.Hole_Score)].index,axis=0)
-        return size
 
     def are_there_any_non_zero_distances_from_the_hole_after_the_shot(self):
         """Checking to make sure that there are shots in the data that have nonzero distance from the hole.
@@ -59,7 +58,7 @@ class Impute_a_Hole (object):
         if bool(len(self.df[self.df.Distance_to_Hole_after_the_Shot!=0])):
             return True
         else:
-            self.tuples_to_remove.update(tuple(j) for j in self.df[Impute_a_Hole.id_cols].as_matrix().tolist())
+            self.tuples_to_remove.update(tuple(j) for j in self.df[Impute_a_Hole.id_cols].values.astype(int).tolist())
             return False
 
     def _set_attributes_before_finding_the_hole(self):
@@ -91,30 +90,33 @@ class Impute_a_Hole (object):
         
         c = 0
         while np.mean(abs_deviation) > max_allowable_mean_abs_deviation:
-            print len(self.df), np.mean(abs_deviation)
+            #print len(self.df), np.mean(abs_deviation)
             c += 1
             if c>=25:
-                print '\033[1m','25 attempts were made to remove outliers. Imputation failed. Removed whole hole.','\033[0m'
-                self.tuples_to_remove.update(self.df[Impute_a_Hole.id_cols].as_matrix().tolist())
+                #print '\033[91m','25 attempts were made to remove outliers. Imputation failed. Removed whole hole.','\033[0m'
+                self.tuples_to_remove.update(tuple(j) for j in self.df[Impute_a_Hole.id_cols].values.astype(int).tolist())
                 return False
             mean_abs_deviation = np.mean(abs_deviation); std_abs_deviation = np.std(abs_deviation)
-            self.tuples_to_remove.update(tuple(j) for j in self.without_holed_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation][Impute_a_Hole.id_cols].as_matrix().tolist())
+            self.tuples_to_remove.update(tuple(j) for j in self.without_holed_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation][Impute_a_Hole.id_cols].values.astype(int).tolist())
             self.df = self.df.drop(self.without_holed_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation].index,axis=0)
+            self.without_holed_shots = self.without_holed_shots.drop(self.without_holed_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation].index,axis=0)
             self._set_attributes_before_finding_the_hole()
             hole_x, hole_y = self._find_the_hole()
             abs_deviation = np.abs(((self.x - hole_x)**2 + (self.y - hole_y)**2)**.5 - self.d)
 
         if np.amax(abs_deviation) > max_allowable_max_abs_deviation:
-            self.tuples_to_remove.update(tuple(j) for j in self.without_holed_shots[abs_deviation > max_allowable_max_abs_deviation][Impute_a_Hole.id_cols].as_matrix().tolist())
+            self.tuples_to_remove.update(tuple(j) for j in self.without_holed_shots[abs_deviation > max_allowable_max_abs_deviation][Impute_a_Hole.id_cols].values.astype(int).tolist())
             self.df = self.df.drop(self.without_holed_shots[abs_deviation > max_allowable_max_abs_deviation].index,axis=0)
             self._set_attributes_before_finding_the_hole()
             hole_x, hole_y = self._find_the_hole()
 
         after = len(self.tuples_to_remove)
         if (after-before)>0:
-            print '\033[91m','There were %d player-holes removed during imputation of hole location.' % (after-before,),'\033[0m'
+            #print '\033[91m','There were %d player-holes removed during imputation of hole location.' % (after-before,),'\033[0m'
+            pass
         else:
-            print '\033[92m', 'Imputation Successful, no shots removed.','\033[0m'
+            #print '\033[92m', 'Imputation Successful, no shots removed.','\033[0m'
+            pass
         if len(self.df)==0: 
             return False
         else: 
@@ -151,30 +153,33 @@ class Impute_a_Hole (object):
         
         c = 0
         while np.mean(abs_deviation) > max_allowable_mean_abs_deviation:
-            print len(self.df), np.mean(abs_deviation)
+            #print len(self.df), np.mean(abs_deviation)
             c += 1
             if c>=25:
-                print '\033[1m','25 attempts were made to remove outliers. Imputation failed. Removed whole hole.','\033[0m'
-                self.tuples_to_remove.update(self.df[Impute_a_Hole.id_cols].as_matrix().tolist())
+                #print '\033[91m','25 attempts were made to remove outliers. Imputation failed. Removed whole hole.','\033[0m'
+                self.tuples_to_remove.update(tuple(j) for j in self.df[Impute_a_Hole.id_cols].values.astype(int).tolist())
                 return False
             mean_abs_deviation = np.mean(abs_deviation); std_abs_deviation = np.std(abs_deviation)
-            self.tuples_to_remove.update(tuple(j) for j in self.only_tee_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation][Impute_a_Hole.id_cols].as_matrix().tolist())
+            self.tuples_to_remove.update(tuple(j) for j in self.only_tee_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation][Impute_a_Hole.id_cols].values.astype(int).tolist())
             self.df = self.df.drop(self.only_tee_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation].index,axis=0)
-            self._set_attributes_before_finding_the_hole()
+            self.only_tee_shots = self.only_tee_shots.drop(self.only_tee_shots[abs_deviation > mean_abs_deviation + 2.5*std_abs_deviation].index,axis=0)
+            self._set_attributes_before_finding_the_tee_box()
             tee_box_x, tee_box_y = self._find_the_hole()
             abs_deviation = np.abs(((self.x - tee_box_x)**2 + (self.y - tee_box_y)**2)**.5 - self.d)
 
         if np.amax(abs_deviation) > max_allowable_max_abs_deviation:
-            self.tuples_to_remove.update(tuple(j) for j in self.only_tee_shots[abs_deviation > max_allowable_max_abs_deviation][Impute_a_Hole.id_cols].as_matrix().tolist())
+            self.tuples_to_remove.update(tuple(j) for j in self.only_tee_shots[abs_deviation > max_allowable_max_abs_deviation][Impute_a_Hole.id_cols].values.astype(int).tolist())
             self.df = self.df.drop(self.only_tee_shots[abs_deviation > max_allowable_max_abs_deviation].index,axis=0)
             self._set_attributes_before_finding_the_tee_box()
             tee_box_x, tee_box_y = self._find_the_hole()
 
         after = len(self.tuples_to_remove)
         if (after-before)>0:
-            print '\033[91m','There were %d player-holes removed during imputation of hole location.' % (after-before,),'\033[0m'
+            pass
+            #print '\033[91m','There were %d player-holes removed during imputation of hole location.' % (after-before,),'\033[0m'
         else:
-            print '\033[92m','Imputation Successful, no shots removed.','\033[0m'
+            pass
+            #print '\033[92m','Imputation Successful, no shots removed.','\033[0m'
         if len(self.df)==0: 
             return False
         else: 
@@ -183,53 +188,89 @@ class Impute_a_Hole (object):
             return True
 
     def set_z_of_closest(self):
+        """This sets an attribute for the z coordinate of the closest shot recorded to the hole. Since imputation
+        of the z coordinate of the hole is impossible, I'll use this as an approximation for the z coordinate of the hole. """
         self.sorted_df = self.df[self.df.Distance_to_Hole_after_the_Shot!=0].sort_values('Distance_to_Hole_after_the_Shot')
         self.z_of_closest = self.sorted_df.Z_Coordinate.values[0]
 
-year=2003
-data = e.make_df(year,verbose=False)
-uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
-hole_locations = {}
-tee_box_locations = {}
-z_of_closest = {}
-tuples_to_remove = set()
-for tup in uCRHtps:
-    hole = Impute_a_Hole(tup[0],tup[1],tup[2],data)
-    print tup
-    print 'Number of shots with zero coordinates but nonzero distances: %d' % (hole.filter_out_shots_with_zero_coordinates_but_nonzero_distances(),)
-    print 'Number of shots with zero distances but nonzero coordiantes: %d' % (hole.filter_out_shots_with_zero_distances_from_hole_but_not_last_shot(),)
-    if hole.are_there_any_non_zero_distances_from_the_hole_after_the_shot() and hole.find_the_hole(3.5,10) and hole.find_the_tee_box(310,720):
-        hole_locations[(year,)+tup] = (hole.hole_x,hole.hole_y)
-        tee_box_locations[(year,)+tup] = (hole.tee_box_x,hole.tee_box_y)
-        hole.set_z_of_closest()
-        z_of_closest[(year,)+tup] = hole.z_of_closest
-    tuples_to_remove.update(hole.tuples_to_remove)
+f = open('data/data.csv','w')
+f.close()
+
+for year in range(2003,2017):
+    print year
+    data = e.make_df(year,verbose=True)
+    uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
+    hole_locations = {}
+    tee_box_locations = {}
+    z_of_closest = {}
+    tuples_to_remove = set()
+    for tup in uCRHtps:
+        hole = Impute_a_Hole(tup[0],tup[1],tup[2],data)
+        #print tup
+        #print 'Number of shots with zero coordinates but nonzero distances: %d' % (hole.filter_out_shots_with_zero_coordinates_but_nonzero_distances(),)
+        hole.filter_out_shots_with_zero_coordinates_but_nonzero_distances()
+        #print 'Number of shots with zero distances but nonzero coordiantes: %d' % (hole.filter_out_shots_with_zero_distances_from_hole_but_not_last_shot(),)
+        hole.filter_out_shots_with_zero_distances_from_hole_but_not_last_shot()
+        usable1,usable2,usable3 = False,False,False
+        usable1 = hole.are_there_any_non_zero_distances_from_the_hole_after_the_shot()
+        if usable1:
+            usable2 = hole.find_the_hole(.5,3)
+            if usable2:
+                usable3 = hole.find_the_tee_box(5,15)
+        if usable1 and usable2 and usable3:
+            hole_locations[(year,)+tup] = (hole.hole_x,hole.hole_y)
+            tee_box_locations[(year,)+tup] = (hole.tee_box_x,hole.tee_box_y)
+            hole.set_z_of_closest()
+            z_of_closest[(year,)+tup] = hole.z_of_closest
+        tuples_to_remove.update(hole.tuples_to_remove)
 
 
-before = len(data)
-inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].as_matrix().tolist()) if tuple(i) not in tuples_to_remove]
-data = data.iloc[inds]
-after = len(data)
-shrinkage = float(before-after)/before * 100
-print 'Data has been shrunk by %g percent.' % shrinkage
+    before = len(data)
+    inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].values.astype(int).tolist()) if tuple(i) not in tuples_to_remove]
+    data = data.iloc[inds]
+    after = len(data)
+    shrinkage = float(before-after)/before * 100
+    print 'Data has been shrunk by %g percent.' % shrinkage
 
 
-data.insert(len(data.columns),'Shots_taken_after',data.Hole_Score-data.Shot)
-data.sort_values('Shots_taken_after')
-cols = ['Year','Course_#','Round','Hole']
-data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(tup)][0] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                +data[data.Shots_taken_after>0].X_Coordinate.tolist())
-data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(tup)][1] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                +data[data.Shots_taken_after>0].Y_Coordinate.tolist())
-data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(tup)] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                +data[data.Shots_taken_after>0].Z_Coordinate.tolist())
-data.sort_values('Shot')
-all_cols = ['Course_#','Player_#','Hole','Round','Shot','X_Coordinate','Y_Coordinate','Z_Coordinate']
-cols2 = ['Course_#','Player_#','Hole','Round','Shot']
-my_big_dict = {tuple(tup[0:5]):tuple(tup[5:8]) for tup in data[all_cols].values.tolist()}
-data.insert(len(data.columns),'Came_from_X',[tee_box_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
-                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][0] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
-data.insert(len(data.columns),'Came_from_Y',[tee_box_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
-                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][1] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
-data.insert(len(data.columns),'Came_from_Z',[np.nan for _ in xrange(len(data[data.Shot==1]))]
-                +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][2] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+    data.insert(len(data.columns),'Shots_taken_after',data.Hole_Score-data.Shot)
+    data = data.sort_values('Shots_taken_after')
+    cols = ['Year','Course_#','Round','Hole']
+    data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(tup)][0] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
+                    +data[data.Shots_taken_after>0].X_Coordinate.tolist())
+    data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(tup)][1] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
+                    +data[data.Shots_taken_after>0].Y_Coordinate.tolist())
+    data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(tup)] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
+                    +data[data.Shots_taken_after>0].Z_Coordinate.tolist())
+    data =  data.sort_values('Shot')
+    all_cols = ['Course_#','Player_#','Hole','Round','Shot','X_Coordinate','Y_Coordinate','Z_Coordinate']
+    cols2 = ['Course_#','Player_#','Hole','Round','Shot']
+    my_big_dict = {tuple(tup[0:5]):tuple(tup[5:8]) for tup in data[all_cols].values.tolist()}
+    data.insert(len(data.columns),'Started_at_X',[tee_box_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
+                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][0] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+    data.insert(len(data.columns),'Started_at_Y',[tee_box_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
+                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][1] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+    data.insert(len(data.columns),'Started_at_Z',[np.nan for _ in xrange(len(data[data.Shot==1]))]
+                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][2] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+    data.insert(len(data.columns),'Distance_with_new_coordinates',((data.Started_at_X.values - data.Went_to_X.values)**2 + 
+                                                                (data.Started_at_Y.values - data.Went_to_Y.values)**2)**.5)
+    data.insert(len(data.columns),'Dist_diff',np.abs(data.Distance_with_new_coordinates.values - data.Distance.values / 12.0) / 3)
+
+    tuples_to_remove = set(tuple(tup) for tup in data[data.Dist_diff>15][Impute_a_Hole.id_cols].values.astype(int).tolist())
+    before = len(data)
+    inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].values.astype(int).tolist()) if tuple(i) not in tuples_to_remove]
+    data = data.iloc[inds]
+    after = len(data)
+    shrinkage = float(before-after)/before * 100
+    print 'Data has been shrunk by %g percent.' % shrinkage
+    print len(data)
+    cols_to_remove = ['Dist_diff','Distance_with_new_coordinates','X_Coordinate','Y_Coordinate','Z_Coordinate','Date','Lie',
+                    'Tour_Code','Tour_Description','In_the_Hole_Flag','Slope','Distance_from_Center','Distance_from_Edge']
+
+    for column in cols_to_remove:
+        data = data.drop(column,axis=1)
+    with open('data/data.csv','a') as f:
+        if year>2003:
+            data.to_csv(f,mode='a',header=False,index=False)
+        else:
+            data.to_csv(f,mode='a',index=False)
