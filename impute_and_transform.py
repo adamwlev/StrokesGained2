@@ -193,8 +193,6 @@ class Impute_a_Hole (object):
         self.sorted_df = self.df[self.df.Distance_to_Hole_after_the_Shot!=0].sort_values('Distance_to_Hole_after_the_Shot')
         self.z_of_closest = self.sorted_df.Z_Coordinate.values[0]
 
-f = open('data/data.csv','w')
-f.close()
 
 for year in range(2003,2017):
     print year
@@ -233,29 +231,37 @@ for year in range(2003,2017):
     print 'Data has been shrunk by %g percent.' % shrinkage
 
 
-    data.insert(len(data.columns),'Shots_taken_after',data.Hole_Score-data.Shot)
-    data = data.sort_values('Shots_taken_after')
+    data.insert(len(data.columns),'Shots_taken_from_location',data.Hole_Score-data.Shot+1)
+    data = data.sort_values('Shots_taken_from_location')
     cols = ['Year','Course_#','Round','Hole']
-    data.insert(len(data.columns),'Went_to_X',[hole_locations[tuple(tup)][0] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                    +data[data.Shots_taken_after>0].X_Coordinate.tolist())
-    data.insert(len(data.columns),'Went_to_Y',[hole_locations[tuple(tup)][1] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                    +data[data.Shots_taken_after>0].Y_Coordinate.tolist())
-    data.insert(len(data.columns),'Went_to_Z',[z_of_closest[tuple(tup)] for tup in data[data.Shots_taken_after==0][cols].values.astype(int).tolist()]
-                    +data[data.Shots_taken_after>0].Z_Coordinate.tolist())
+    data.insert(len(data.columns),'Went_to_X',[0 for _ in xrange(len(data[data.Shots_taken_from_location==1]))]
+                    +(np.array(data[data.Shots_taken_from_location>1].X_Coordinate.tolist()) - 
+                    np.array([hole_locations[tuple(tup)][0] for tup in data[data.Shots_taken_from_location>1][cols].values.astype(int).tolist()])).tolist())
+    data.insert(len(data.columns),'Went_to_Y',[0 for _ in xrange(len(data[data.Shots_taken_from_location==1]))]
+                    +(np.array(data[data.Shots_taken_from_location>1].Y_Coordinate.tolist()) - 
+                    np.array([hole_locations[tuple(tup)][1] for tup in data[data.Shots_taken_from_location>1][cols].values.astype(int).tolist()])).tolist())
+    data.insert(len(data.columns),'Went_to_Z',[0 for _ in xrange(len(data[data.Shots_taken_from_location==1]))]
+                    +(np.array(data[data.Shots_taken_from_location>1].Z_Coordinate.tolist()) - 
+                    np.array([z_of_closest[tuple(tup)] for tup in data[data.Shots_taken_from_location>1][cols].values.astype(int).tolist()])).tolist())
     data =  data.sort_values('Shot')
     all_cols = ['Course_#','Player_#','Hole','Round','Shot','X_Coordinate','Y_Coordinate','Z_Coordinate']
     cols2 = ['Course_#','Player_#','Hole','Round','Shot']
     my_big_dict = {tuple(tup[0:5]):tuple(tup[5:8]) for tup in data[all_cols].values.tolist()}
-    data.insert(len(data.columns),'Started_at_X',[tee_box_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
-                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][0] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
-    data.insert(len(data.columns),'Started_at_Y',[tee_box_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]
-                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][1] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+    data.insert(len(data.columns),'Started_at_X',(np.array([tee_box_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]) - 
+                    np.array([hole_locations[tuple(tup)][0] for tup in data[data.Shot==1][cols].values.astype(int).tolist()])).tolist()
+                    +(np.array([my_big_dict[tuple(tup[0:4]+[tup[4]-1])][0] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()]) - 
+                    np.array([hole_locations[tuple(tup)][0] for tup in data[data.Shot!=1][cols].values.astype(int).tolist()])).tolist())
+    data.insert(len(data.columns),'Started_at_Y',(np.array([tee_box_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()]) -
+                    np.array([hole_locations[tuple(tup)][1] for tup in data[data.Shot==1][cols].values.astype(int).tolist()])).tolist()
+                    +(np.array([my_big_dict[tuple(tup[0:4]+[tup[4]-1])][1] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()]) - 
+                    np.array([hole_locations[tuple(tup)][1] for tup in data[data.Shot!=1][cols].values.astype(int).tolist()])).tolist())
     data.insert(len(data.columns),'Started_at_Z',[np.nan for _ in xrange(len(data[data.Shot==1]))]
-                    +[my_big_dict[tuple(tup[0:4]+[tup[4]-1])][2] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()])
+                    +(np.array([my_big_dict[tuple(tup[0:4]+[tup[4]-1])][2] for tup in data[data.Shot!=1][cols2].values.astype(int).tolist()]) - 
+                    np.array([z_of_closest[tuple(tup)] for tup in data[data.Shot!=1][cols].values.astype(int).tolist()])).tolist())
     data.insert(len(data.columns),'Distance_with_new_coordinates',((data.Started_at_X.values - data.Went_to_X.values)**2 + 
                                                                 (data.Started_at_Y.values - data.Went_to_Y.values)**2)**.5)
-    data.insert(len(data.columns),'Dist_diff',np.abs(data.Distance_with_new_coordinates.values - data.Distance.values / 12.0) / 3)
-
+    data.insert(len(data.columns),'Dist_diff',np.abs(data.Distance_with_new_coordinates.values - data.Distance.values / 12.0))
+    
     tuples_to_remove = set(tuple(tup) for tup in data[data.Dist_diff>15][Impute_a_Hole.id_cols].values.astype(int).tolist())
     before = len(data)
     inds = [u for u,i in enumerate(data[Impute_a_Hole.id_cols].values.astype(int).tolist()) if tuple(i) not in tuples_to_remove]
@@ -266,11 +272,10 @@ for year in range(2003,2017):
     print len(data)
     cols_to_remove = ['Dist_diff','Distance_with_new_coordinates','X_Coordinate','Y_Coordinate','Z_Coordinate','Date','Lie',
                     'Tour_Code','Tour_Description','In_the_Hole_Flag','Slope','Distance_from_Center','Distance_from_Edge']
-
     for column in cols_to_remove:
         data = data.drop(column,axis=1)
-    with open('data/data.csv','a') as f:
-        if year>2003:
-            data.to_csv(f,mode='a',header=False,index=False)
-        else:
-            data.to_csv(f,mode='a',index=False)
+    if year>=2016:
+        data = data.drop('Left/Right',axis=1)
+    data.insert(len(data.columns),'Distance_from_hole',(data.Started_at_X.values**2 + data.Started_at_Y.values**2)**.5)
+    with open('data/%d.csv' % (year,),'w') as f:
+        data.to_csv(f,index=False)
