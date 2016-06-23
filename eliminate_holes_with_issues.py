@@ -23,14 +23,16 @@ def make_df (y,verbose=True):
     data.Hole_Score = pd.to_numeric(data.Hole_Score)
     data.Shot = pd.to_numeric(data.Shot)
     
-    cols = ['Year','Course_#','Player_#','Round','Hole']
+    cols = ['Course_#','Player_#','Round','Hole']
     tuples_to_remove = set()
     tuples_to_remove.update(tuple(i) for i in data[data.Hole_Score.isnull()][cols].values.astype(int).tolist())
     tuples_to_remove.update(tuple(i) for i in data[data.Shot>data.Hole_Score][cols].values.astype(int).tolist())
     tuples_to_remove.update(tuple(i) for i in data[(data.Shot!=data.Hole_Score) & ((data.X_Coordinate==0) | (data.Y_Coordinate==0) | \
                                          (data.Z_Coordinate==0))][cols].values.astype(int).tolist())
+    
     inds = [u for u,i in enumerate(data[cols].values.astype(int).tolist()) if tuple(i) not in tuples_to_remove]
     data = data.iloc[inds]
+    
     after = len(data)
     shrinkage = float(before-after)/before * 100
     if verbose:
