@@ -31,11 +31,10 @@ def convert_cats(cat,dist):
 data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
 
 
-uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
+uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole),pd.unique(data.Year)))
 
 data = data[['Course_#','Round','Hole','Player_#','Hole_Score','Shot','Cat','Shots_taken_from_location',
-            'Distance_from_hole','Started_at_X','Started_at_Y','Went_to_X','Went_to_Y']].values
-
+            'Distance_from_hole','Started_at_X','Started_at_Y','Went_to_X','Went_to_Y','Year']].values
 
 
 errors = []
@@ -49,11 +48,13 @@ for cat in strokes_gained_per_cat:
 overall_just_dist = IsotonicRegression()
 overall_just_dist.fit(data[:,8],data[:,7])
 
-for crhtup in uCRHtps:
-    subset = data[np.where((data[:,0]==crhtup[0]) & (data[:,1]==crhtup[1]) & (data[:,2]==crhtup[2]))]
+for crhytup in uCRHYtps:
+    subset = data[np.where((data[:,0]==crhytup[0]) & (data[:,1]==crhytup[1]) & (data[:,2]==crhytup[2]) & (data[:,13]==crhytup[3]))]
     if subset.shape[0]==0:
         continue
     players = pd.unique(subset[:,3])
+    if len(players)<=1:
+        continue
     scores = {player:int(subset[np.where(subset[:,3]==player)][0,4]) for player in players}
     ave_score = np.mean(np.array([scores.get(player) for player in players]))
     for player in players:
@@ -61,8 +62,8 @@ for crhtup in uCRHtps:
         #print len(sub)
         models = {}
         for cat in strokes_gained_per_cat:
-            models[cat] = IsotonicRegression()
             if len(sub[np.where(sub[:,6]==cat)])>0:
+                models[cat] = IsotonicRegression()
                 models[cat].fit(sub[np.where(sub[:,6]==cat)][:,8],sub[np.where(sub[:,6]==cat)][:,7])
 
         just_dist_model = IsotonicRegression()
@@ -75,6 +76,8 @@ for crhtup in uCRHtps:
         sub = subset[np.where(subset[:,3]==player)]
 
         for row_ind in range(2,scores[player]+1):
+            if scores[player]!=sub.shape[0]:
+                print 'hmmm'
             shot = sub[np.where(sub[:,5]==row_ind)]
             cat = shot[0,6]
             dist = shot[0,8]
@@ -82,27 +85,36 @@ for crhtup in uCRHtps:
             cat_before = shot_before[0,6]
             dist_before = shot_before[0,8]
             if row_ind==2:
-                if models[cat].predict([dist]) != np.nan:
+                if cat in models and models[cat].predict([dist])[0] != np.nan:
                     model_predicted_strokes_gained += ave_score - models[cat].predict([dist])[0] - 1
                     strokes_gained_per_cat[cat_before].append(ave_score - models[cat].predict([dist])[0] - 1)
                 else:
-                    normal_cat_diff = overall_models[cat].predict([dist]) - overall_just_dist.predict([dist])
+                    normal_cat_diff = overall_models[cat].predict([dist])[0] - overall_just_dist.predict([dist])[0]
                     model_predicted_strokes_gained += ave_score - (just_dist_model.predict([dist])[0] + normal_cat_diff) - 1
                     strokes_gained_per_cat[cat_before].append(ave_score - (just_dist_model.predict([dist])[0] + normal_cat_diff) - 1)
             else:
-                if models[cat].predict([dist]) != np.nan:
-                    model_predicted_strokes_gained += models[cat_before].predict([dist_before])[0] - models[cat].predict([dist])[0] - 1
-                    strokes_gained_per_cat[cat_before].append(models[cat_before].predict([dist_before])[0] - models[cat].predict([dist])[0] - 1)
-                ***below here***
+                if cat not in models or models[cat].predict([dist])[0] == np.nan:
+                    normal_cat_diff = overall_models[cat].predict([dist])[0] - overall_just_dist.predict([dist])[0]
+                    difficulty_end = just_dist_model.predict([dist])[0] + normal_cat_diff
                 else:
-                    normal_cat_diff = overall_models[cat].predict([dist]) - overall_just_dist.predict([dist])
-                    model_predicted_strokes_gained += ave_score - (just_dist_model.predict([dist])[0] + normal_cat_diff) - 1
-                    strokes_gained_per_cat[cat_before].append(ave_score - (just_dist_model.predict([dist])[0] + normal_cat_diff) - 1)
+                    difficulty_end = models[cat].predict([dist])[0]
+                if cat_before not in models or models[cat_before].predict([dist_before])[0] == np.nan:
+                    normal_cat_diff = overall_models[cat_before].predict([dist_before])[0] - overall_just_dist.predict([dist_before])[0]
+                    difficulty_start = just_dist_model.predict([dist_before])[0] + normal_cat_diff
+                else:
+                    difficulty_start = models[cat_before].predict([dist_before])[0]
+                model_predicted_strokes_gained += difficulty_start - difficulty_end - 1
+                strokes_gained_per_cat[cat_before].append(difficulty_start - difficulty_end - 1)
 
         cat_last = sub[np.where(sub[:,5]==scores[player])][0,6]
         dist_last = sub[np.where(sub[:,5]==scores[player])][0,8]
-        model_predicted_strokes_gained += model.predict([dist_last])[0] - 1
-        strokes_gained_per_cat[cat_last].append(model.predict([dist_last])[0] - 1)
+        if cat_last not in models or models[cat_last].predict([dist_last])[0]==np.nan:
+            normal_cat_diff = overall_models[cat_last].predict([dist_last])[0] - overall_just_dist.predict([dist_last])[0]
+            difficulty_last = just_dist_model.predict([dist_last])[0] + normal_cat_diff
+        else:
+            difficulty_last = models[cat_last].predict([dist_last])[0]
+        model_predicted_strokes_gained += difficulty_last - 1
+        strokes_gained_per_cat[cat_last].append(difficulty_last - 1)
 
         errors.append((model_predicted_strokes_gained - tot_strokes_gained))
 
