@@ -16,7 +16,7 @@ def load_sparse_csc(filename):
 def my_norm(x,BETA):
     return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
-def inflate(tournament_group,rounds_to_inflate,n_tournament_groups,BETA,window_size=28):
+def inflate(tournament_group,rounds_to_inflate,n_tournament_groups,BETA,n_players,window_size=28):
     mat = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
     mat_1 = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
     for j in rounds_to_inflate:
@@ -35,7 +35,7 @@ def alpha(A,a):
     w,v = eigs(A,k=1,which='LM')
     return a/w[0].real
 
-def solve(mat,mat_1,a,min_reps,x_guess=None,x_guess1=None):
+def solve(mat,mat_1,a,min_reps,n_players,x_guess=None,x_guess1=None):
     mat.data[mat_1.data<1e-6] = 0
     mat_1.data[mat_1.data<1e-6] = 0
     mat.data[np.isnan(mat.data)] = 0
@@ -66,9 +66,9 @@ def main(args):
 	n_tournaments = len(data.groupby(['Tournament_Year','Permanent_Tournament_#']))
 	
 	
-	args = args[1:]
-	BETA = args.split(':')[0]
-	As = args.split(':')[1].split(',')
+	args = args[1:][0]
+	BETA = float(args.split(':')[0])
+	As = map(float,args.split(':')[1].split(','))
 	ranks,reps = {},{}
 	bin_size = 4
 	window_size = 28
@@ -83,16 +83,15 @@ def main(args):
 	    tournaments.add(','.join(map(str,[df.iloc[0].Tournament_Year,df.iloc[0]['Permanent_Tournament_#']])))
 	    tournament_group = len(tournaments)/bin_size
 	    rounds_to_inflate.append(round_ind)
-	    if tournament_group==2:
-	    	continue
 	    if tournament_group>current_group:
-	        A,G = inflate(tournament_group,rounds_to_inflate,n_tournament_groups,BETA)
+	        A,G = inflate(tournament_group,rounds_to_inflate,n_tournament_groups,BETA,n_players)
 	        if current_group==0:
 	            for a in As:
-	            	res = solve(A,G,a,1)
-		            res[a] = []
-		            ranks[a].append(res[0])
-		            reps[a].append(res[1])
+	            	res = solve(A,G,a,1,n_players)
+		        ranks[a] = []
+			reps[a] = []
+		        ranks[a].append(res[0])
+		        reps[a].append(res[1])
 	            print 'Tournament Group %d done' % tournament_group
 	            current_group = tournament_group
 	            tournament_groups.append(set())
@@ -100,16 +99,17 @@ def main(args):
 	        else:
 	            w_a_approx = np.append(solve.w_a[0 if tournament_group<=window_size else n_players:],solve.w_a[-n_players:])
 	            w_g_approx = np.append(solve.w_g[0 if tournament_group<=window_size else n_players:],solve.w_g[-n_players:])
-		        for a in As
-		            res = solve(A,G,a,1,w_a_approx,w_g_approx)
-		            ranks[a].append(res[0])
-		            reps[a].append(res[1])
+		    for a in As:
+		        res = solve(A,G,a,1,n_players,w_a_approx,w_g_approx)
+		        ranks[a].append(res[0])
+		        reps[a].append(res[1])
 	            print 'Tournament Group %d done' % tournament_group
 	            current_group = tournament_group
 	            tournament_groups.append(set())
 	            rounds_to_inflate = []
 
 	a_to_score = {}
+	ols = LinearRegression()
 	for a in As:
 
 		master_df = pd.DataFrame({'Player_Index':[],'Permanent_Tournament_#':[],'Course_#':[],
@@ -147,7 +147,7 @@ def main(args):
 		
 		a_to_score[a] = np.mean(scores)+np.std(scores)/10**.5
 
-	with open('%g:' % (BETA,) + ','.join(As), 'w') as outFile:
+	with open('outFiles/%g:' % (BETA,) + ','.join(map(str,As)), 'w') as outFile:
 		outFile.write('BETA=%g' % (BETA,) + '\n')
 		for a in As:
 			outFile.write('%g = %g' % (a,a_to_score[a]) + '\n')
