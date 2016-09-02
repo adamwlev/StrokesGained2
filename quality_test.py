@@ -11,7 +11,8 @@ def dict_compare(d1, d2):
     #removed = d2_keys - d1_keys
     #modified = {o : (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
     same = set(o for o in intersect_keys if d1[o] == d2[o])
-    return len(same)
+    different = set(o for o in intersect_keys if d1[o] != d2[o])
+    return len(same), len(different), different
 
 
 for year in range(2003,2017):
