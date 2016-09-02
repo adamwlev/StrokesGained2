@@ -131,8 +131,8 @@ def main(args):
             df3['Pct_Reps'] = df3['Player_Index'].map(pct_reps_dict)
             master_df = pd.concat([master_df,df3])
 
-        master_df.to_csv('master_df.csv',index=False)
-        master_df = master_df.replace([np.inf, -np.inf], np.nan).dropna()
+        master_df = master_df.dropna()
+        master_df.Reps = np.abs(master_df.Reps)
 
         X,y = master_df.Rating.values,master_df.Finishing_Pct.values
         kfold = KFold(len(y),n_folds=10,shuffle=True,random_state=45)
