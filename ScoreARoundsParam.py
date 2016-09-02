@@ -131,6 +131,7 @@ def main(args):
             df3['Pct_Reps'] = df3['Player_Index'].map(pct_reps_dict)
             master_df = pd.concat([master_df,df3])
 
+        master_df.to_csv('master_df.csv')
         master_df = master_df.replace([np.inf, -np.inf], np.nan).dropna()
 
         X,y = master_df.Rating.values,master_df.Finishing_Pct.values
