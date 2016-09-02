@@ -106,13 +106,14 @@ def partition (lst, n):
 	return [lst[i::n] for i in xrange(n)]
 
 num_cores = multiprocessing.cpu_count()
-slices = partition(uCRHYtps[0:1000],num_cores)
+slices = partition(uCRHYtps,num_cores)
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(run_a_slice, slices)
 
 big_dict = {key:value for little_dict in results for key,value in little_dict.iteritems()}
 cols = ['Course_#','Round','Hole','Year','Player_#','Shot']
 data = pd.read_csv('data/%d.csv' % YEAR)
+print len(big_dict),len(data)
 data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
 
-data.to_csv('data/2003.csv',index=False)
+data.to_csv('data/%d.csv' % YEAR,index=False)
