@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 import itertools
 from sklearn.isotonic import IsotonicRegression
+from sklearn.linear_model import LinearRegression
 import multiprocessing
 
 for year in range(2003,2009):
     print year
-    cols = ['Course_#','Round','Hole']
+    cols = ['Course_#','Round','Hole','Permanent_Tournament_#']
     data = pd.read_csv('data/%d.csv' % (year,))
     if year==2003:
         df = data.loc[0:2,:]
@@ -38,6 +39,7 @@ uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Rou
 data = data[['Course_#','Round','Hole','Player_#','Hole_Score','Shot','Cat','Shots_taken_from_location',
             'Distance_from_hole','Started_at_X','Started_at_Y','Went_to_X','Went_to_Y','Year']].values
 
+cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 
 errors = []
 strokes_gained_per_cat = {'Bunker':[],'Other':[],'Green':[],'Fairway':[],'Fringe':[],'Primary Rough':[],
@@ -65,13 +67,15 @@ def run_a_slice(inds):
             sub = subset[np.where(subset[:,3]!=player)]
             #print len(sub)
             models = {}
-            for cat in strokes_gained_per_cat:
-                if len(sub[np.where(sub[:,6]==cat)])>0:
-                    models[cat] = IsotonicRegression()
-                    models[cat].fit(sub[np.where(sub[:,6]==cat)][:,8],sub[np.where(sub[:,6]==cat)][:,7])
+            ranges_covered = {}
+            for cat in cats:
+                if len(sub[np.where(sub[:,6]==cat)])>6:
+                    models[cat] = LinearRegression()
+                    models[cat].fit(sub[np.where(sub[:,6]==cat)][:,8][:,None],sub[np.where(sub[:,6]==cat)][:,7])
+                    ranges_covered[cat] = (np.amin(sub[np.where(sub[:,6]==cat)][:,8]),np.amax(sub[np.where(sub[:,6]==cat)][:,8]))
 
-            just_dist_model = IsotonicRegression(out_of_bounds='clip')
-            just_dist_model.fit(sub[:,8],sub[:,7])
+            just_dist_model = LinearRegression()
+            just_dist_model.fit(sub[:,8][:,None],sub[:,7])
 
             tot_strokes_gained = ave_score - scores[player]
 
@@ -89,34 +93,34 @@ def run_a_slice(inds):
                 cat_before = shot_before[0,6]
                 dist_before = shot_before[0,8]
                 if row_ind==2:
-                    if cat not in models or np.isnan(models[cat].predict([dist])[0]):
+                    if cat not in models or dist<ranges_covered[cat][0] or dist>ranges_covered[cat][1]:
                         normal_cat_diff = overall_models[cat].predict([dist])[0] - overall_just_dist.predict([dist])[0]
-                        difficulty_end = just_dist_model.predict([dist])[0] + normal_cat_diff
+                        difficulty_end = just_dist_model.predict(np.array([dist])[:,None])[0] + normal_cat_diff
                     else:
-                        difficulty_end = models[cat].predict([dist])[0]
+                        difficulty_end = models[cat].predict(np.array([dist])[:,None])[0]
                     model_predicted_strokes_gained += ave_score - difficulty_end - 1
                     strokes_gained_per_cat[cat_before].append(ave_score - difficulty_end - 1)
                 else:
-                    if cat not in models or np.isnan(models[cat].predict([dist])[0]):
+                    if cat not in models or dist<ranges_covered[cat][0] or dist>ranges_covered[cat][1]:
                         normal_cat_diff = overall_models[cat].predict([dist])[0] - overall_just_dist.predict([dist])[0]
-                        difficulty_end = just_dist_model.predict([dist])[0] + normal_cat_diff
+                        difficulty_end = just_dist_model.predict(np.array([dist])[:,None])[0] + normal_cat_diff
                     else:
-                        difficulty_end = models[cat].predict([dist])[0]
-                    if cat_before not in models or np.isnan(models[cat_before].predict([dist_before])[0]):
+                        difficulty_end = models[cat].predict(np.array([dist])[:,None])[0]
+                    if cat_before not in models or dist_before<ranges_covered[cat_before][0] or dist_before>ranges_covered[cat_before][1]:
                         normal_cat_diff = overall_models[cat_before].predict([dist_before])[0] - overall_just_dist.predict([dist_before])[0]
-                        difficulty_start = just_dist_model.predict([dist_before])[0] + normal_cat_diff
+                        difficulty_start = just_dist_model.predict(np.array([dist_before])[:,None])[0] + normal_cat_diff
                     else:
-                        difficulty_start = models[cat_before].predict([dist_before])[0]
+                        difficulty_start = models[cat_before].predict(np.array([dist_before])[:,None])[0]
                     model_predicted_strokes_gained += difficulty_start - difficulty_end - 1
                     strokes_gained_per_cat[cat_before].append(difficulty_start - difficulty_end - 1)
 
             cat_last = sub[np.where(sub[:,5]==scores[player])][0,6]
             dist_last = sub[np.where(sub[:,5]==scores[player])][0,8]
-            if cat_last not in models or np.isnan(models[cat_last].predict([dist_last])[0]):
+            if cat_last not in models or dist_last<ranges_covered[cat_last][0] or dist_last>ranges_covered[cat_last][1]:
                 normal_cat_diff = overall_models[cat_last].predict([dist_last])[0] - overall_just_dist.predict([dist_last])[0]
-                difficulty_last = just_dist_model.predict([dist_last])[0] + normal_cat_diff
+                difficulty_last = just_dist_model.predict(np.array([dist_last])[:,None])[0] + normal_cat_diff
             else:
-                difficulty_last = models[cat_last].predict([dist_last])[0]
+                difficulty_last = models[cat_last].predict(np.array([dist_last])[:,None])[0]
             model_predicted_strokes_gained += difficulty_last - 1
             strokes_gained_per_cat[cat_last].append(difficulty_last - 1)
 
