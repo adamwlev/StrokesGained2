@@ -93,8 +93,6 @@ for YEAR in range(2016,2017):
                 else np.nan for course,round,hole,year,player,shot in data[cols].values.tolist()]
     data.insert(len(data.columns),'Green_to_work_with',ww)
     data.insert(len(data.columns),'Difficulty_Baseline',baseline)
-    # print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
-    # print data[(data.Shot!=1)].Difficulty_Baseline.describe()
     data.insert(len(data.columns),'Correction',[0]*len(data))
     data.loc[data.Cat=='Green','Correction'] = -0.0003 -0.0358*data[data.Cat=='Green'].Started_at_Z +\
                                                 0.0007*data[data.Cat=='Green'].Started_at_Z*data[data.Cat=='Green'].Distance_from_hole
@@ -121,7 +119,5 @@ for YEAR in range(2016,2017):
     difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
     cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
-    
-    print ((data.Difficulty_Start-data.Difficulty_End-1 - data.Strokes_Gained).abs()).describe()
-    #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
-    #data.to_csv('data/%d.csv' % YEAR,index=False)
+    data.insert(len(data.columns),'New_Strokes_Gained',data.Difficulty_Start-data.Difficulty_End-1)
+    data.to_csv('data/%d.csv' % YEAR,index=False)
