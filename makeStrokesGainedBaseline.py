@@ -57,7 +57,7 @@ def run_a_slice(slice):
         if subset.shape[0]==0:
             continue
         baseline = predict_using_dist(zip(subset.Cat,subset.Distance_from_hole))
-        baseline_dict[(course,round,hole,year)] = {(pl,sh):bd for pl,sh,bd in zip(subset['Player_#']),baseline}
+        baseline_dict[(course,round,hole,year)] = {(pl,sh):bd for pl,sh,bd in zip(subset['Player_#'],subset.Shot,baseline)}
         green = subset[subset.Cat=='Green']
         non_green = subset[subset.Cat!='Green'] 
         to_work_with = get_green_to_work_with(green,zip(non_green.Started_at_X,non_green.Started_at_Y),slack=radians(25))
