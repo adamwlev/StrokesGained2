@@ -112,7 +112,7 @@ for YEAR in range(2016,2017):
                                                         0.0014*data[data.Cat=='Primary Rough'].Started_at_Z
     data.insert(len(data.columns),'Difficuly_Start',[0]*len(data))
     data.loc[data.Shot!=1,'Difficuly_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
-    cols = ['Course_#','Round','Hole','Player_#']
+    cols = ['Course_#','Hole','Round']
     ave_score_dict = data.groupby(['Course_#','Hole','Round','Player_#'],as_index=False)['Hole_Score'].mean().groupby(['Course_#','Hole','Round'])['Hole_Score'].mean().to_dict()
     data.loc[data.shot==1,'Difficuly_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
     print data.info()
