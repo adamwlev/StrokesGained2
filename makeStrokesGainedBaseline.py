@@ -115,7 +115,7 @@ for YEAR in range(2016,2017):
     cols = ['Course_#','Hole','Round']
     ave_score_dict = data.groupby(['Course_#','Hole','Round','Player_#'],as_index=False)['Hole_Score'].mean().groupby(['Course_#','Hole','Round'])['Hole_Score'].mean().to_dict()
     data.loc[data.Shot==1,'Difficulty_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
-    data.loc[data.Difficuly_Start<1,'Difficulty_Start'] = 1
+    data.loc[data.Difficulty_Start<1,'Difficulty_Start'] = 1
     data.insert(len(data.columns),'Difficulty_End',[0]*len(data))
     data.loc[data.Shot==data.Hole_Score,'Difficulty_End'] = 0
     difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
