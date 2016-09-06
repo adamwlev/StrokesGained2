@@ -72,7 +72,7 @@ for YEAR in range(2016,2017):
 
     big_dict = {key:value for little_dict in results for key,value in little_dict.iteritems()}
     cols = ['Course_#','Round','Hole','Year','Player_#','Shot']
-    ww = [big_dict[(course,round,hole,year)][(player,shot)] if (course,round,hole,year) in big_dict and (player_shot) in big_dict[(course,round,hole,year)] else np.nan for course,round,hole,year,player,shot in data[cols].values.tolist()]
+    ww = [big_dict[(course,round,hole,year)][(player,shot)] if (course,round,hole,year) in big_dict and (player,shot) in big_dict[(course,round,hole,year)] else np.nan for course,round,hole,year,player,shot in data[cols].values.tolist()]
     data.insert(len(data.columns),'Green_to_work_with',ww)
     print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
