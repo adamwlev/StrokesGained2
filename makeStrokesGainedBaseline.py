@@ -121,7 +121,7 @@ for YEAR in range(2016,2017):
     difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
     cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
-    print data.info()
-    print data.Difficulty_End.describe()
+    
+    print ((data.Difficulty_Start-data.Difficulty_End-1 - data.Strokes_Gained).abs()).describe()
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
     #data.to_csv('data/%d.csv' % YEAR,index=False)
