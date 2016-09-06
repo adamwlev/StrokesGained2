@@ -67,7 +67,7 @@ def run_a_slice(slice):
 cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 overall_models = {}
 for cat in cats:
-    with gzip.open('overall_distance_models/%s.pkl.gz', 'rb') as pickleFile:
+    with gzip.open('overall_distance_models/%s.pkl.gz' % cat, 'rb') as pickleFile:
         overall_models[cat] = pickle.load(pickleFile)
 
 for YEAR in range(2016,2017):
