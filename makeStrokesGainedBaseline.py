@@ -73,7 +73,7 @@ for YEAR in range(2016,2017):
     data = pd.read_csv('data/%d.csv' % YEAR)
 
     data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
-
+    data.loc[data.Shot==1,'Cat'] = 'Tee Box'
     uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole),pd.unique(data.Year)))
 
     cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
@@ -119,7 +119,7 @@ for YEAR in range(2016,2017):
     data.insert(len(data.columns),'Difficulty_End',[0]*len(data))
     data.loc[data.Shot==data.Hole_Score,'Difficulty_End'] = 0
     difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
-    cols = ['Course_#','Round','Hole','Year','Player_#','Shot']
+    cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
     print data.info()
     print data.Difficulty_End.describe()
