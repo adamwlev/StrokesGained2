@@ -58,7 +58,7 @@ def run_a_slice(slice):
         baseline_dict[(course,round,hole,year)] = preds_dict
         green = subset[subset.Cat=='Green']
         non_green = subset[subset.Cat!='Green'] 
-        to_work_with = get_green_to_work_with(green,zip(non_green.Started_at_X,non_green.Started_at_Y),slack=radians(25))
+        to_work_with = get_green_to_work_with(green,zip(non_green.Started_at_X,non_green.Started_at_Y),slack=radians(20))
         to_work_with_dict[(course,round,hole,year)] = {(pl,sh):ww for pl,sh,ww in zip(non_green['Player_#'],non_green.Shot,to_work_with)}
     return (baseline_dict,to_work_with_dict)
 
@@ -93,7 +93,28 @@ for YEAR in range(2016,2017):
                 else np.nan for course,round,hole,year,player,shot in data[cols].values.tolist()]
     data.insert(len(data.columns),'Green_to_work_with',ww)
     data.insert(len(data.columns),'Difficulty_Baseline',baseline)
-    print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
-    print data[(data.Shot!=1)].Difficulty_Baseline.describe()
+    # print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
+    # print data[(data.Shot!=1)].Difficulty_Baseline.describe()
+    data.insert(len(data.columns),'Correction',[0]*len(data))
+    data.loc[data.Cat=='Green','Correction'] = -0.0003 -0.0358*data[data.Cat=='Green'].Started_at_Z +\
+                                                0.0007*data[data.Cat=='Green'].Started_at_Z*data[data.Cat=='Green'].Distance_from_hole
+    data.loc[data.Cat=='Bunker','Correction'] = -0.0129 +0.0007*data[data.Cat=='Bunker'].Green_to_work_with +\
+                                                 0.0014*data[data.Cat=='Bunker'].Started_at_Z
+    data.loc[data.Cat=='Fairway','Correction'] = -0.0077 +0.0004*data[data.Cat=='Fairway'].Green_to_work_with
+                                                  0.0014*data[data.Cat=='Fairway'].Started_at_Z
+    data.loc[data.Cat=='Fringe','Correction'] = -0.0077 +0.0003*data[data.Cat=='Fringe'].Green_to_work_with
+                                                 0.0014*data[data.Cat=='Fringe'].Started_at_Z
+    data.loc[data.Cat=='Intermediate Rough',] = -0.0223 +0.0008*data[data.Cat=='Intermediate Rough'].Green_to_work_with
+                                                 0.0014*data[data.Cat=='Intermediate Rough'].Started_at_Z
+    data.loc[data.Cat=='Other','Correction'] = -0.0195 +0.0007*data[data.Cat=='Other'].Green_to_work_with
+                                                0.0014*data[data.Cat=='Other'].Started_at_Z
+    data.loc[data.Cat=='Primary Rough','Correction'] = -0.0412 +0.0014*data[data.Cat=='Primary Rough'].Green_to_work_with
+                                                        0.0014*data[data.Cat=='Primary Rough'].Started_at_Z
+    data.insert(len(data.columns),'Difficuly_Start',[0]*len(data))
+    data.loc[data.Shot!=1,'Difficuly_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
+    cols = ['Course_#','Round','Hole','Player_#']
+    ave_score_dict = data.groupby(['Course_#','Hole','Round','Player_#'],as_index=False)['Hole_Score'].mean().groupby(['Course_#','Hole','Round'])['Hole_Score'].mean().to_dict()
+    data.loc[data.shot==1,'Difficuly_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
+    print data.info()
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
     #data.to_csv('data/%d.csv' % YEAR,index=False)
