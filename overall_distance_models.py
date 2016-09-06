@@ -26,7 +26,7 @@ cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediat
 overall_models = {}
 for cat in cats:
     overall_models[cat] = IsotonicRegression(out_of_bounds='clip')
-    overall_models[cat].fit(data[np.where(data[:,6]==cat)][:,8],data[np.where(data[:,6]==cat)][:,7])
+    overall_models[cat].fit(data[data.Cat==cat].Distance_from_hole,data[data.Cat==cat].Shots_taken_from_location)
 
 for cat in overall_models:
 	with open('overall_distance_models/%s.pkl' % cat,'w') as pickleFile:
