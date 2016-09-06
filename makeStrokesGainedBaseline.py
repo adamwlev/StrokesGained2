@@ -110,13 +110,18 @@ for YEAR in range(2016,2017):
                                                 0.0014*data[data.Cat=='Other'].Started_at_Z
     data.loc[data.Cat=='Primary Rough','Correction'] = -0.0412 +0.0014*data[data.Cat=='Primary Rough'].Green_to_work_with +\
                                                         0.0014*data[data.Cat=='Primary Rough'].Started_at_Z
-    data.insert(len(data.columns),'Difficuly_Start',[0]*len(data))
-    data.loc[data.Shot!=1,'Difficuly_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
+    data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
+    data.loc[data.Shot!=1,'Difficulty_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
     cols = ['Course_#','Hole','Round']
     ave_score_dict = data.groupby(['Course_#','Hole','Round','Player_#'],as_index=False)['Hole_Score'].mean().groupby(['Course_#','Hole','Round'])['Hole_Score'].mean().to_dict()
-    data.loc[data.Shot==1,'Difficuly_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
-    data.loc[data.Difficuly_Start<1,'Difficuly_Start'] = 1
-    print data.Difficuly_Start.describe()
-
+    data.loc[data.Shot==1,'Difficulty_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
+    data.loc[data.Difficuly_Start<1,'Difficulty_Start'] = 1
+    data.insert(len(data.columns),'Difficulty_End',[0]*len(data))
+    data.loc[data.Shot==data.Hole_Score,'Difficulty_End'] = 0
+    difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
+    cols = ['Course_#','Round','Hole','Year','Player_#','Shot']
+    data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple(tup[-1]+1)] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
+    print data.info()
+    print data.Difficulty_End.describe()
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
     #data.to_csv('data/%d.csv' % YEAR,index=False)
