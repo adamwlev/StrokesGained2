@@ -43,12 +43,6 @@ def get_green_to_work_with(df,points,slack):
             ww.append(sub.Distance_from_hole.max())
     return ww
 
-def predict_using_dist(list_of_tuples):
-    preds = []
-    for cat,dist in list_of_tuples:
-        preds.append(overall_models[cat].predict([dist])[0])
-    return preds
-
 def run_a_slice(slice):
     to_work_with_dict = {}
     baseline_dict = {}
@@ -56,8 +50,12 @@ def run_a_slice(slice):
         subset = data[(data['Course_#']==course) & (data.Round==round) & (data.Hole==hole) & (data.Year==year) & (data.Shot!=1)]
         if subset.shape[0]==0:
             continue
-        baseline = predict_using_dist(zip(subset.Cat,subset.Distance_from_hole))
-        baseline_dict[(course,round,hole,year)] = {(pl,sh):bd for pl,sh,bd in zip(subset['Player_#'],subset.Shot,baseline)}
+        preds_dict = {}
+        for cat in pd.unique(subset.Cat):
+            sub = subset[subset.Cat==cat]
+            preds = overall_models[cat].predict(sub.Distance_from_hole)
+            preds_dict.update({(pl,sh):bd for pl,sh,bd in zip(sub['Player_#'],sub.Shot,preds)})
+        baseline_dict[(course,round,hole,year)] = preds_dict
         green = subset[subset.Cat=='Green']
         non_green = subset[subset.Cat!='Green'] 
         to_work_with = get_green_to_work_with(green,zip(non_green.Started_at_X,non_green.Started_at_Y),slack=radians(25))
@@ -91,7 +89,8 @@ for YEAR in range(2016,2017):
     ww = [big_work_with_dict[(course,round,hole,year)][(player,shot)] if (course,round,hole,year) in big_work_with_dict 
             and (player,shot) in big_work_with_dict[(course,round,hole,year)] else np.nan for course,round,hole,year,player,shot 
             in data[cols].values.tolist()]
-    baseline = [big_baseline_dict[(course,round,hole,year)][(player,shot)] for course,round,hole,year,player,shot in data[cols].values.tolist()]
+    baseline = [big_baseline_dict[(course,round,hole,year)][(player,shot)] if (player,shot) in big_baseline_dict[(course,round,hole,year)] 
+                else np.nan for course,round,hole,year,player,shot in data[cols].values.tolist()]
     data.insert(len(data.columns),'Green_to_work_with',ww)
     data.insert(len(data.columns),'Difficulty_Baseline',baseline)
     print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
