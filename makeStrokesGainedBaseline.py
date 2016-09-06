@@ -100,15 +100,15 @@ for YEAR in range(2016,2017):
                                                 0.0007*data[data.Cat=='Green'].Started_at_Z*data[data.Cat=='Green'].Distance_from_hole
     data.loc[data.Cat=='Bunker','Correction'] = -0.0129 +0.0007*data[data.Cat=='Bunker'].Green_to_work_with +\
                                                  0.0014*data[data.Cat=='Bunker'].Started_at_Z
-    data.loc[data.Cat=='Fairway','Correction'] = -0.0077 +0.0004*data[data.Cat=='Fairway'].Green_to_work_with
+    data.loc[data.Cat=='Fairway','Correction'] = -0.0077 +0.0004*data[data.Cat=='Fairway'].Green_to_work_with +\
                                                   0.0014*data[data.Cat=='Fairway'].Started_at_Z
-    data.loc[data.Cat=='Fringe','Correction'] = -0.0077 +0.0003*data[data.Cat=='Fringe'].Green_to_work_with
+    data.loc[data.Cat=='Fringe','Correction'] = -0.0077 +0.0003*data[data.Cat=='Fringe'].Green_to_work_with +\
                                                  0.0014*data[data.Cat=='Fringe'].Started_at_Z
-    data.loc[data.Cat=='Intermediate Rough',] = -0.0223 +0.0008*data[data.Cat=='Intermediate Rough'].Green_to_work_with
+    data.loc[data.Cat=='Intermediate Rough',] = -0.0223 +0.0008*data[data.Cat=='Intermediate Rough'].Green_to_work_with +\
                                                  0.0014*data[data.Cat=='Intermediate Rough'].Started_at_Z
-    data.loc[data.Cat=='Other','Correction'] = -0.0195 +0.0007*data[data.Cat=='Other'].Green_to_work_with
+    data.loc[data.Cat=='Other','Correction'] = -0.0195 +0.0007*data[data.Cat=='Other'].Green_to_work_with +\
                                                 0.0014*data[data.Cat=='Other'].Started_at_Z
-    data.loc[data.Cat=='Primary Rough','Correction'] = -0.0412 +0.0014*data[data.Cat=='Primary Rough'].Green_to_work_with
+    data.loc[data.Cat=='Primary Rough','Correction'] = -0.0412 +0.0014*data[data.Cat=='Primary Rough'].Green_to_work_with +\
                                                         0.0014*data[data.Cat=='Primary Rough'].Started_at_Z
     data.insert(len(data.columns),'Difficuly_Start',[0]*len(data))
     data.loc[data.Shot!=1,'Difficuly_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
