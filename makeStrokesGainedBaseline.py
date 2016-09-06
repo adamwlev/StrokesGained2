@@ -94,5 +94,6 @@ for YEAR in range(2016,2017):
     data.insert(len(data.columns),'Green_to_work_with',ww)
     data.insert(len(data.columns),'Difficulty_Baseline',baseline)
     print data[(data.Shot!=1) & (data.Cat!='Green')].Green_to_work_with.describe()
+    print data[(data.Shot!=1)].Difficulty_Baseline.describe()
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
     #data.to_csv('data/%d.csv' % YEAR,index=False)
