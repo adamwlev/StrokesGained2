@@ -115,6 +115,7 @@ for YEAR in range(2016,2017):
     cols = ['Course_#','Hole','Round']
     ave_score_dict = data.groupby(['Course_#','Hole','Round','Player_#'],as_index=False)['Hole_Score'].mean().groupby(['Course_#','Hole','Round'])['Hole_Score'].mean().to_dict()
     data.loc[data.Shot==1,'Difficuly_Start'] = [ave_score_dict[tuple(tup)] for tup in data[cols].values.tolist()]
+    data.loc[data.Difficuly_Start<1,'Difficuly_Start'] = 1
     print data.Difficuly_Start.describe()
 
     #data['Strokes_Gained'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
