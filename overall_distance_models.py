@@ -19,7 +19,7 @@ def convert_cats(cat,dist,shot):
 data = pd.concat([pd.read_csv('data/%d.csv' % (year,)) for year in range(2003,2017)])
 data = data[data.Shot!=1]
 print data.shape
-data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
+data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
 
 cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 
