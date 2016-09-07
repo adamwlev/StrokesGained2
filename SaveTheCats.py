@@ -30,18 +30,6 @@ if __name__=='__main__':
     cats['tee3'] = 'Cat=="Tee Box" & Par_Value==3'
     cats['tee45'] = 'Cat=="Tee Box" & (Par_Value==4 | Par_Value==5)'
 
-    def convert_cats(cat,dist,shot):
-        if cat in ['Green Side Bunker','Fairway Bunker']:
-            return 'Bunker'
-        elif cat not in ['Green','Fairway','Fringe','Primary Rough','Intermediate Rough','Tee Box']:
-            return 'Other'
-        elif cat=='Fringe' and dist>120:
-            return 'Intermediate Rough'
-        elif cat=='Tee Box' and shot!=1:
-            return 'Fairway'
-        else:
-            return cat
-
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
 
@@ -82,7 +70,6 @@ if __name__=='__main__':
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
-    data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
     n_players = len(inds)
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)
