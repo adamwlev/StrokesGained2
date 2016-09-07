@@ -68,7 +68,7 @@ for cat in cats:
     with gzip.open('overall_distance_models/%s.pkl.gz' % cat, 'rb') as pickleFile:
         overall_models[cat] = pickle.load(pickleFile)
 
-for YEAR in range(2016,2017):
+for YEAR in range(2003,2017):
     print YEAR
     data = pd.read_csv('data/%d.csv' % YEAR)
 
@@ -119,5 +119,5 @@ for YEAR in range(2016,2017):
     difficulty_dict = data.groupby(['Course_#','Hole','Round','Player_#','Shot'])['Difficulty_Start'].mean().to_dict()
     cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
-    data.insert(len(data.columns),'New_Strokes_Gained',data.Difficulty_Start-data.Difficulty_End-1)
+    data['Strokes_Gained'] = data.Difficulty_Start.values-data.Difficulty_End.values-1
     data.to_csv('data/%d.csv' % YEAR,index=False)
