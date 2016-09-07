@@ -34,19 +34,18 @@ if __name__=='__main__':
         return [lst[i::n] for i in xrange(n)]
 
     def run_a_slice(slice):
-        def get_matrices(tup,conditon):
+        def get_matrix(tup,conditon):
             year,tournament,round,course,hole = tup
             subset = data.query(condition)[['Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Player_Index']].values
-            arr,arr1 = np.zeros((n_players,n_players)),np.zeros((n_players,n_players))
+            arr = np.zeros((n_players,n_players))
             dists = squareform(pdist(subset[:,0:2]))
             inds = [(i,j) for i,j in itertools.product(xrange(len(dists)),xrange(len(dists))) if i!=j and dists[i,j]<epsilon*subset[i,2] and dists[i,j]<epsilon*subset[j,2]]
             for i,j in inds:
-                if arr1[i,j]!=0:
+                if arr[i,j]!=0:
                     continue
                 arr[int(subset[i,4]),int(subset[j,4])] += 1.0/(1.0 + math.exp(subset[i,3]-subset[j,3])) + .5
-                arr1[int(subset[i,4]),int(subset[j,4])] += 1.0
-            A,G = csc_matrix(arr),csc_matrix(arr1)
-            return A,G
+            mat = csc_matrix(arr)
+            return mat
 
         def save_sparse_csc(filename,array):
             np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
@@ -55,9 +54,8 @@ if __name__=='__main__':
         for ind,tup in slice:
             for cat in cats:
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
-                A,G = get_matrices(tuple(tup),condition)
-                save_sparse_csc('cats%g/%s_%dA' % (epsilon*100,cat,ind),A)
-                save_sparse_csc('cats%g/%s_%dG' % (epsilon*100,cat,ind),G)
+                mat = get_matrix(tuple(tup),condition)
+                save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
 
     _,epsilon = sys.argv
