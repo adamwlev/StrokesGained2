@@ -64,7 +64,7 @@ if __name__=='__main__':
     else:
         os.makedirs('cats%s' % (epsilon,))
     epsilon = float(epsilon)/100
-    data = pd.concat([pd.read_csv('data/%d.csv' % (year)) for year in range(2003,2004)])
+    data = pd.concat([pd.read_csv('data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])

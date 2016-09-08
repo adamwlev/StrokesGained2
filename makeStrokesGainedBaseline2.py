@@ -68,7 +68,7 @@ for cat in cats:
     with gzip.open('overall_distance_models/%s.pkl.gz' % cat, 'rb') as pickleFile:
         overall_models[cat] = pickle.load(pickleFile)
 
-for YEAR in range(2003,2017):
+for YEAR in range(2009,2010):
     print YEAR
     data = pd.read_csv('data/%d.csv' % YEAR)
 
@@ -78,7 +78,7 @@ for YEAR in range(2003,2017):
 
     cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 
-    num_cores = multiprocessing.cpu_count()
+    num_cores = multiprocessing.cpu_count()-2
     slices = partition(uCRHYtps,num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
@@ -108,6 +108,7 @@ for YEAR in range(2003,2017):
                                                 0.0014*data[data.Cat=='Other'].Started_at_Z
     data.loc[data.Cat=='Primary Rough','Correction'] = -0.0412 +0.0014*data[data.Cat=='Primary Rough'].Green_to_work_with +\
                                                         0.0014*data[data.Cat=='Primary Rough'].Started_at_Z
+    data.loc[data.Correction.isnull(),'Correction'] = 0
     data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
     data.loc[data.Shot!=1,'Difficulty_Start'] = data[data.Shot!=1].Difficulty_Baseline - data[data.Shot!=1].Correction
     cols = ['Course_#','Hole','Round']
