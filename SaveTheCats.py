@@ -43,7 +43,7 @@ if __name__=='__main__':
             for i,j in inds:
                 if arr[i,j]!=0:
                     continue
-                arr[int(subset[i,4]),int(subset[j,4])] += 1.0/(1.0 + math.exp(subset[i,3]-subset[j,3])) + .5
+                arr[int(subset[i,4]),int(subset[j,4])] += 1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5
             mat = csc_matrix(arr)
             return mat
 
