@@ -10,9 +10,9 @@ import gc
     
 if __name__=='__main__':
     cats = {}
-    cats['green'] = ['Cat=="Green"']
-    cats['fringe'] = ['Cat=="Fringe"']
-    cats['other'] = ['Cat=="Other"']
+    cats['green'] = 'Cat=="Green"'
+    cats['fringe'] = 'Cat=="Fringe"'
+    cats['other'] = 'Cat=="Other"'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
@@ -43,7 +43,11 @@ if __name__=='__main__':
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
                 mat = get_matrix(tuple(tup),condition)
                 gc.collect()
-                if mat:
+                try:
+                    mat.data
+                except:
+                    continue
+                else:
                     save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
 
