@@ -10,9 +10,9 @@ import gc
     
 if __name__=='__main__':
     cats = {}
-    cats['green'] = ['Cat=="Green"']
-    cats['fringe'] = ['Cat=="Fringe"']
-    cats['other'] = ['Cat=="Other"']
+    cats['green'] = 'Cat=="Green"'
+    cats['fringe'] = 'Cat=="Fringe"'
+    cats['other'] = 'Cat=="Other"'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
