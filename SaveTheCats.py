@@ -6,6 +6,7 @@ from scipy.sparse import csc_matrix
 from scipy.spatial.distance import pdist,squareform
 import os,sys
 import multiprocessing
+import gc
     
 if __name__=='__main__':
     cats = {}
@@ -29,6 +30,7 @@ if __name__=='__main__':
     cats['bunker'] = 'Cat=="Bunker"'
     cats['tee3'] = 'Cat=="Tee Box" & Par_Value==3'
     cats['tee45'] = 'Cat=="Tee Box" & (Par_Value==4 | Par_Value==5)'
+    cats['other'] = 'Cat=="Other"'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
@@ -44,8 +46,11 @@ if __name__=='__main__':
                 if arr[i,j]!=0:
                     continue
                 arr[int(subset[i,4]),int(subset[j,4])] += 1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5
-            mat = csc_matrix(arr)
-            return mat
+            if (arr!=0).sum()==0:
+                return
+            else:
+                mat = csc_matrix(arr)
+                return mat
 
         def save_sparse_csc(filename,array):
             np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
@@ -55,7 +60,13 @@ if __name__=='__main__':
             for cat in cats:
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
                 mat = get_matrix(tuple(tup),condition)
-                save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
+                gc.collect()
+                try:
+                    mat.data
+                except:
+                    continue
+                else:
+                    save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
 
     _,epsilon = sys.argv
