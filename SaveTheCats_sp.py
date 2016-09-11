@@ -6,6 +6,7 @@ from scipy.sparse import csc_matrix
 from scipy.spatial.distance import pdist,squareform
 import os,sys
 import multiprocessing
+import gc
     
 if __name__=='__main__':
     cats = {}
@@ -41,6 +42,7 @@ if __name__=='__main__':
             for cat in cats:
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
                 mat = get_matrix(tuple(tup),condition)
+                gc.collect()
                 if mat:
                     save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
