@@ -34,6 +34,7 @@ if __name__=='__main__':
     cats['other'] = ['other']
 
     _,cat,epsilon,a,beta = sys.argv
+    print cat
     epsilon,a,beta = tuple(map(float,[epsilon,a,beta]))
 
     key = pd.read_csv('cats%g/key_file.csv' % (epsilon,),header=None,index_col=0)
@@ -147,6 +148,8 @@ if __name__=='__main__':
             ranks.append(res[0])
             reps.append(res[1])
 
-    os.makedirs('ranks-%g-%g-%g' % (epsilon,a,beta))
-    np.save('ranks-%g-%g-%g/ranks.npy' % (epsilon,a,beta), np.array(ranks))
-    np.save('ranks-%g-%g-%g/reps.npy' % (epsilon,a,beta), np.array(reps))
+    if not os.path.isfile('ranks-%g-%g-%g' % (epsilon,a,beta)):
+        os.makedirs('ranks-%g-%g-%g' % (epsilon,a,beta))
+        
+    np.save('ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
+    np.save('ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)

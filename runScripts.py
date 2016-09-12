@@ -1,7 +1,12 @@
 import subprocess
+import sys
 
-subprocess.call(["python","SaveTheCats.py" ,"4"])
-subprocess.call(["python","SaveTheCats.py" ,"5"])
-subprocess.call(["python","SaveTheCats.py" ,"6"])
-subprocess.call(["python","SaveTheCats.py" ,"7"])
-subprocess.call(["python","SaveTheCats.py" ,"8"])
+if __name__=="__main__":
+	_,epsilon,alpha,beta = sys.argv
+	epsilon,alpha,beta = tuple(map(float,[epsilon,alpha,beta]))
+
+	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
+			'rough375','fairway0','fairway300','fairway540','bunker','other']
+	
+	for cat in cats:
+		subprocess.call(["python","produceRanks.py" ,cat,"%g" % epsilon, "%g" % alpha, "%g" % beta])
