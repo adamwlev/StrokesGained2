@@ -48,6 +48,8 @@ if __name__=='__main__':
         return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
 
     def run_a_slice(slice):
+        def my_norm(x,beta):
+            return norm.pdf(x,0,beta)/norm.pdf(0,0,beta)
         def inflate(cat,tournament_group,holes_to_inflate,n_tournament_groups,beta,window_size):
             mat = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
             mat_1 = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
@@ -104,8 +106,6 @@ if __name__=='__main__':
     gc.collect()
 
     def run_a_slice(slice):
-        def my_norm(x,beta):
-            return norm.pdf(x,0,beta)/norm.pdf(0,0,beta)
         def alpha(A,a):
             A.data[A.data<1e-6] = 0
             A.data[np.isnan(A.data)]=0
