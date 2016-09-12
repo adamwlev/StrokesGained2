@@ -39,7 +39,7 @@ if __name__=='__main__':
     key = pd.read_csv('cats%g/key_file.csv' % (epsilon,),header=None,index_col=0)
     key_dict = {tuple(value):key for key,value in key.T.to_dict('list').iteritems()}
 
-    n_players = len(inds_to_name)
+    n_players = len(num_to_ind)
     n_holes = len(hole_tups)
     n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
 
