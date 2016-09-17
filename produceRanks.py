@@ -75,7 +75,7 @@ if __name__=='__main__':
     window_size = 28
     n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
     current_group = 0
-    tournament_groups=[set()]
+    tournament_groups = defaultdict(set)
     tournaments = set()
     group_to_tups = {}
     holes_to_inflate = []
@@ -84,7 +84,6 @@ if __name__=='__main__':
         tournament_group = (len(tournaments)-1)/bin_size
         if tournament_group>current_group:
             current_group = tournament_group
-            tournament_groups.append(set())
             group_to_tups[current_group] = holes_to_inflate
             holes_to_inflate = []
         tournament_groups[current_group].add(tuple(tup[0:2]))
