@@ -15,7 +15,7 @@ def convert_broadie_cats(cat,dist,par):
     	return 'Around-the-Green'
 
 
-data = pd.concat([pd.read_csv('data/%d.csv' % year) for year in range(2003,2005)])
+data = pd.concat([pd.read_csv('data/%d.csv' % year) for year in range(2003,2017)])
 data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
 
 field_for_cat = data.groupby(['Year','Course_#','Round','Broadie_cat'])
