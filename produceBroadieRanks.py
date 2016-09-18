@@ -55,7 +55,7 @@ for group in tournament_groups:
 	for cat in broadie_cats:
 		d = data[(data.Year.isin(years)) & (data['Permanent_Tournament_#'].isin(t_ids)) & (data.Broadie_cat==cat)].groupby('Player_#').Strokes_Gained_Broadie.mean().to_dict()
 		if cat not in ave_perfs:
-			ave_perfs[cat] = np.array((n_players,n_tournament_groups))
+			ave_perfs[cat] = np.zeros((n_players,n_tournament_groups))
 		ave_perfs[cat][:,group] += np.array([d[p_id] if p_id in d else 0 for p_id in range(n_players)])
 
 for cat in ave_perfs:
