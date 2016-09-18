@@ -31,6 +31,7 @@ with open('num_to_ind.pkl','r') as pickleFile:
     num_to_ind = pickle.load(pickleFile)
 
 n_players = len(num_to_ind)
+n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
 
 bin_size = 4
 window_size = 28
