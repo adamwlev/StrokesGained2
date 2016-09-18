@@ -47,16 +47,21 @@ for tup in hole_tups:
         holes_to_inflate = []
     tournament_groups[current_group].add(tuple(tup[0:2]))
 
-ave_perfs = {}
+ave_perfs,counts = {},{}
 broadie_cats = ['Putting','Off-the-Tee','Approach-the-Green','Around-the-Green']
 for group in tournament_groups:
 	years = set(x[0] for x in tournament_groups[group])
 	t_ids = set(x[1] for x in tournament_groups[group])
 	for cat in broadie_cats:
 		d = data[(data.Year.isin(years)) & (data['Permanent_Tournament_#'].isin(t_ids)) & (data.Broadie_cat==cat)].groupby('Player_#').Strokes_Gained_Broadie.mean().to_dict()
+		dc = data[(data.Year.isin(years)) & (data['Permanent_Tournament_#'].isin(t_ids)) & (data.Broadie_cat==cat)].groupby('Player_#').Strokes_Gained_Broadie.count().to_dict()
 		if cat not in ave_perfs:
 			ave_perfs[cat] = np.zeros((n_players,n_tournament_groups))
+			counts[cat] = np.zeros((n_players,n_tournament_groups))
 		ave_perfs[cat][:,group] += np.array([d[p_id] if p_id in d else 0 for p_id in range(n_players)])
-
+		counts[cat][:,group] += np.array([dc[p_id] if p_id in dc else 0 for p_id in range(n_players)])
 for cat in ave_perfs:
-	np.save('Broadie_aves/%s.npy' % cat,ave_perfs[cat])
+	np.save('Broadie_aves/%s_ave.npy' % cat,ave_perfs[cat])
+	np.save('Broadie_aves/%s_count.npy' % cat,counts[cat])
+
+
