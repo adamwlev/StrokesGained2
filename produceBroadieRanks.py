@@ -20,6 +20,7 @@ data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) 
 
 field_for_cat = data.groupby(['Year','Course_#','Round','Broadie_cat'])
 data.insert(len(data.columns),'SG_of_Field',[0]*len(data))
-d = field_for_cat.Strokes_Gained.mean().to_dict()
+d = field_for_cat.Strokes_Gained.count().to_dict()
 
-print d.items()[0:3]
+for key in sorted(d,key=d.get)[0:10]:
+	print key,d[key]
