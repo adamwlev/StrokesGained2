@@ -32,10 +32,10 @@ if __name__=='__main__':
     # cats['fairway540'] = ['fairway540']
     # cats['bunker'] = ['bunker']
     # cats['other'] = ['other']
-    cats['putting'] = 'Broadie_cat=="Putting"'
-    cats['tee'] = 'Broadie_cat=="Off-the-Tee"'
-    cats['approach'] = 'Broadie_cat=="Approach-the-Green"'
-    cats['around_green'] = 'Broadie_cat=="Around-the-Green"'
+    cats['putting'] = ['putting']
+    cats['tee'] = ['tee']
+    cats['approach'] = ['approach']
+    cats['around_green'] = ['around_green']
 
     _,cat,epsilon,a,beta = sys.argv
     print cat
@@ -151,8 +151,8 @@ if __name__=='__main__':
             ranks.append(res[0])
             reps.append(res[1])
 
-    if not os.path.exists('./../ranks-%g-%g-%g' % (epsilon,a,beta)):
-        os.makedirs('./../ranks-%g-%g-%g' % (epsilon,a,beta))
+    if not os.path.exists('./../ranksB-%g-%g-%g' % (epsilon,a,beta)):
+        os.makedirs('./../ranksB-%g-%g-%g' % (epsilon,a,beta))
         
-    np.save('./../ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
-    np.save('./../ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
+    np.save('./../ranksB-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
+    np.save('./../ranksB-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
