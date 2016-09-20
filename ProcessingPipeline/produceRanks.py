@@ -11,33 +11,37 @@ import gc
 import os,sys
 
 if __name__=='__main__':
-    with open('num_to_ind.pkl','r') as pickleFile:
+    with open('./../num_to_ind.pkl','r') as pickleFile:
         num_to_ind = pickle.load(pickleFile)
 
-    with open('hole_tups.pkl','r') as pickleFile:
+    with open('./../hole_tups.pkl','r') as pickleFile:
         hole_tups = pickle.load(pickleFile)
 
     cats = {}
-    cats['tee3'] = ['tee3']
-    cats['tee45'] = ['tee45']
-    cats['green0'] = ['green0','fringe0']
-    cats['green5'] = ['green5','fringe5']
-    cats['green10'] = ['green10','fringe10']
-    cats['green20'] = ['green20','fringe20']
-    cats['rough0'] = ['prough0','irough0']
-    cats['rough90'] = ['prough90','irough90']
-    cats['rough375'] = ['prough375','irough375']
-    cats['fairway0'] = ['fairway0']
-    cats['fairway300'] = ['fairway300']
-    cats['fairway540'] = ['fairway540']
-    cats['bunker'] = ['bunker']
-    cats['other'] = ['other']
+    # cats['tee3'] = ['tee3']
+    # cats['tee45'] = ['tee45']
+    # cats['green0'] = ['green0','fringe0']
+    # cats['green5'] = ['green5','fringe5']
+    # cats['green10'] = ['green10','fringe10']
+    # cats['green20'] = ['green20','fringe20']
+    # cats['rough0'] = ['prough0','irough0']
+    # cats['rough90'] = ['prough90','irough90']
+    # cats['rough375'] = ['prough375','irough375']
+    # cats['fairway0'] = ['fairway0']
+    # cats['fairway300'] = ['fairway300']
+    # cats['fairway540'] = ['fairway540']
+    # cats['bunker'] = ['bunker']
+    # cats['other'] = ['other']
+    cats['putting'] = 'Broadie_cat=="Putting"'
+    cats['tee'] = 'Broadie_cat=="Off-the-Tee"'
+    cats['approach'] = 'Broadie_cat=="Approach-the-Green"'
+    cats['around_green'] = 'Broadie_cat=="Around-the-Green"'
 
     _,cat,epsilon,a,beta = sys.argv
     print cat
     epsilon,a,beta = tuple(map(float,[epsilon,a,beta]))
 
-    key = pd.read_csv('cats%g/key_file.csv' % (epsilon,),header=None,index_col=0)
+    key = pd.read_csv('./../cats_b%g/key_file.csv' % (epsilon,),header=None,index_col=0)
     key_dict = {tuple(value):key for key,value in key.T.to_dict('list').iteritems()}
 
     n_players = len(num_to_ind)
@@ -147,8 +151,8 @@ if __name__=='__main__':
             ranks.append(res[0])
             reps.append(res[1])
 
-    if not os.path.exists('ranks-%g-%g-%g' % (epsilon,a,beta)):
-        os.makedirs('ranks-%g-%g-%g' % (epsilon,a,beta))
+    if not os.path.exists('./../ranks-%g-%g-%g' % (epsilon,a,beta)):
+        os.makedirs('./../ranks-%g-%g-%g' % (epsilon,a,beta))
         
-    np.save('ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
-    np.save('ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
+    np.save('./../ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
+    np.save('./../ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
