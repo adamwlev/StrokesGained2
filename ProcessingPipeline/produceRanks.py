@@ -61,7 +61,7 @@ if __name__=='__main__':
             for j in holes_to_inflate:
                 ind = key_dict[j]
                 for c in cats[cat]:
-                    fname = 'catsb%g/%s_%d.npz' % (epsilon,c,ind)
+                    fname = './../catsb%g/%s_%d.npz' % (epsilon,c,ind)
                     if not os.path.isfile(fname):
                         continue
                     mat += bmat([[load_sparse_csc(fname)*my_norm(tournament_group-k,beta)] for k in range(1,n_tournament_groups+1)],format='csc')
