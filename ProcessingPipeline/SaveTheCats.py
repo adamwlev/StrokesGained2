@@ -84,12 +84,12 @@ if __name__=='__main__':
         return
 
     _,epsilon = sys.argv
-    if os.path.isfile('cats_b%s' % (epsilon,)):
+    if os.path.isfile('./../cats_b%s' % (epsilon,)):
         sys.exit('File already exists.')
     else:
-        os.makedirs('cats_b%s' % (epsilon,))
+        os.makedirs('./../cats_b%s' % (epsilon,))
     epsilon = float(epsilon)/100
-    data = pd.concat([pd.read_csv('data/%d.csv' % (year)) for year in range(2003,2017)])
+    data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
@@ -98,7 +98,7 @@ if __name__=='__main__':
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)
     print len(hole_tups)
-    with open('cats_b%g/key_file.csv' % (epsilon*100,),'w') as keyFile:
+    with open('./../cats_b%g/key_file.csv' % (epsilon*100,),'w') as keyFile:
         for tup in hole_tups:
             keyFile.write(','.join(map(str,[tup[0]] + tup[1])) + '\n')
 
