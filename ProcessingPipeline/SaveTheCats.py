@@ -80,7 +80,7 @@ if __name__=='__main__':
                 except:
                     continue
                 else:
-                    save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
+                    save_sparse_csc('./../cats_b%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
 
     _,epsilon = sys.argv
