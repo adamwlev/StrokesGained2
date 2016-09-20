@@ -61,7 +61,7 @@ if __name__=='__main__':
             for j in holes_to_inflate:
                 ind = key_dict[j]
                 for c in cats[cat]:
-                    fname = 'cats%g/%s_%d.npz' % (epsilon,c,ind)
+                    fname = 'catsb%g/%s_%d.npz' % (epsilon,c,ind)
                     if not os.path.isfile(fname):
                         continue
                     mat += bmat([[load_sparse_csc(fname)*my_norm(tournament_group-k,beta)] for k in range(1,n_tournament_groups+1)],format='csc')
@@ -151,8 +151,8 @@ if __name__=='__main__':
             ranks.append(res[0])
             reps.append(res[1])
 
-    if not os.path.exists('./../ranksB-%g-%g-%g' % (epsilon,a,beta)):
-        os.makedirs('./../ranksB-%g-%g-%g' % (epsilon,a,beta))
+    if not os.path.exists('./../ranksb-%g-%g-%g' % (epsilon,a,beta)):
+        os.makedirs('./../ranksb-%g-%g-%g' % (epsilon,a,beta))
         
-    np.save('./../ranksB-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
-    np.save('./../ranksB-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
+    np.save('./../ranksb-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
+    np.save('./../ranksb-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
