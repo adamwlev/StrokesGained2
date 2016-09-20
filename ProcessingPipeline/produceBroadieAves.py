@@ -61,7 +61,7 @@ for group in tournament_groups:
         ave_perfs[cat][:,group] += np.array([d[ind_to_num[ind]] if ind_to_num[ind] in d else 0 for ind in range(len(num_to_ind))])
         counts[cat][:,group] += np.array([dc[ind_to_num[ind]] if ind_to_num[ind] in dc else 0 for ind in range(len(num_to_ind))])
 for cat in ave_perfs:
-    np.save('Broadie_aves/%s_ave.npy' % cat,ave_perfs[cat])
-    np.save('Broadie_aves/%s_count.npy' % cat,counts[cat])
+    np.save('./../Broadie_aves/%s_ave.npy' % cat,ave_perfs[cat])
+    np.save('./../Broadie_aves/%s_count.npy' % cat,counts[cat])
 
 
