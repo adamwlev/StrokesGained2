@@ -10,27 +10,41 @@ import gc
     
 if __name__=='__main__':
     cats = {}
-    cats['green0'] = 'Cat=="Green" & Distance_from_hole<5'
-    cats['fringe0'] = 'Cat=="Fringe" & Distance_from_hole<5'
-    cats['green5'] = 'Cat=="Green" & Distance_from_hole>=5 & Distance_from_hole<10'
-    cats['fringe5'] = 'Cat=="Fringe" & Distance_from_hole>=5 & Distance_from_hole<10'
-    cats['green10'] = 'Cat=="Green" & Distance_from_hole>=10 & Distance_from_hole<20'
-    cats['fringe10'] = 'Cat=="Fringe" & Distance_from_hole>=10 & Distance_from_hole<20'
-    cats['green20'] = 'Cat=="Green" & Distance_from_hole>=20'
-    cats['fringe20'] = 'Cat=="Fringe" & Distance_from_hole>=20'
-    cats['prough0'] = 'Cat=="Primary Rough" & Distance_from_hole<90'
-    cats['irough0'] = 'Cat=="Intermediate Rough" & Distance_from_hole<90'
-    cats['prough90'] = 'Cat=="Primary Rough" & Distance_from_hole>=90 & Distance_from_hole<375'
-    cats['irough90'] = 'Cat=="Intermediate Rough" & Distance_from_hole>=90 & Distance_from_hole<375'
-    cats['prough375'] = 'Cat=="Primary Rough" & Distance_from_hole>=375'
-    cats['irough375'] = 'Cat=="Intermediate Rough" & Distance_from_hole>=375'
-    cats['fairway0'] = 'Cat=="Fairway" & Distance_from_hole<300'
-    cats['fairway300'] = 'Cat=="Fairway" & Distance_from_hole>=300 & Distance_from_hole<540'
-    cats['fairway540'] = 'Cat=="Fairway" & Distance_from_hole>=540'
-    cats['bunker'] = 'Cat=="Bunker"'
-    cats['tee3'] = 'Cat=="Tee Box" & Par_Value==3'
-    cats['tee45'] = 'Cat=="Tee Box" & (Par_Value==4 | Par_Value==5)'
-    cats['other'] = 'Cat=="Other"'
+    # cats['green0'] = 'Cat=="Green" & Distance_from_hole<5'
+    # cats['fringe0'] = 'Cat=="Fringe" & Distance_from_hole<5'
+    # cats['green5'] = 'Cat=="Green" & Distance_from_hole>=5 & Distance_from_hole<10'
+    # cats['fringe5'] = 'Cat=="Fringe" & Distance_from_hole>=5 & Distance_from_hole<10'
+    # cats['green10'] = 'Cat=="Green" & Distance_from_hole>=10 & Distance_from_hole<20'
+    # cats['fringe10'] = 'Cat=="Fringe" & Distance_from_hole>=10 & Distance_from_hole<20'
+    # cats['green20'] = 'Cat=="Green" & Distance_from_hole>=20'
+    # cats['fringe20'] = 'Cat=="Fringe" & Distance_from_hole>=20'
+    # cats['prough0'] = 'Cat=="Primary Rough" & Distance_from_hole<90'
+    # cats['irough0'] = 'Cat=="Intermediate Rough" & Distance_from_hole<90'
+    # cats['prough90'] = 'Cat=="Primary Rough" & Distance_from_hole>=90 & Distance_from_hole<375'
+    # cats['irough90'] = 'Cat=="Intermediate Rough" & Distance_from_hole>=90 & Distance_from_hole<375'
+    # cats['prough375'] = 'Cat=="Primary Rough" & Distance_from_hole>=375'
+    # cats['irough375'] = 'Cat=="Intermediate Rough" & Distance_from_hole>=375'
+    # cats['fairway0'] = 'Cat=="Fairway" & Distance_from_hole<300'
+    # cats['fairway300'] = 'Cat=="Fairway" & Distance_from_hole>=300 & Distance_from_hole<540'
+    # cats['fairway540'] = 'Cat=="Fairway" & Distance_from_hole>=540'
+    # cats['bunker'] = 'Cat=="Bunker"'
+    # cats['tee3'] = 'Cat=="Tee Box" & Par_Value==3'
+    # cats['tee45'] = 'Cat=="Tee Box" & (Par_Value==4 | Par_Value==5)'
+    # cats['other'] = 'Cat=="Other"'
+    cats['putting'] = 'Broadie_cat=="Putting"'
+    cats['tee'] = 'Broadie_cat=="Off-the-Tee"'
+    cats['approach'] = 'Broadie_cat=="Approach-the-Green"'
+    cats['around_green'] = 'Broadie_cat=="Around-the-Green"'
+
+    def convert_broadie_cats(cat,dist,par):
+        if cat=='Green':
+            return 'Putting'
+        elif cat=='Tee Box' and (par==4 or par==5):
+            return 'Off-the-Tee'
+        elif dist>135:
+            return 'Approach-the-Green'
+        else:
+            return 'Around-the-Green'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
@@ -66,24 +80,25 @@ if __name__=='__main__':
                 except:
                     continue
                 else:
-                    save_sparse_csc('cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
+                    save_sparse_csc('./../cats_b%g/%s_%d' % (epsilon*100,cat,ind),mat)
         return
 
     _,epsilon = sys.argv
-    if os.path.isfile('cats%s' % (epsilon,)):
+    if os.path.isfile('./../cats_b%s' % (epsilon,)):
         sys.exit('File already exists.')
     else:
-        os.makedirs('cats%s' % (epsilon,))
+        os.makedirs('./../cats_b%s' % (epsilon,))
     epsilon = float(epsilon)/100
-    data = pd.concat([pd.read_csv('data/%d.csv' % (year)) for year in range(2003,2017)])
+    data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
+    data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
     n_players = len(inds)
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)
     print len(hole_tups)
-    with open('cats%g/key_file.csv' % (epsilon*100,),'w') as keyFile:
+    with open('./../cats_b%g/key_file.csv' % (epsilon*100,),'w') as keyFile:
         for tup in hole_tups:
             keyFile.write(','.join(map(str,[tup[0]] + tup[1])) + '\n')
 

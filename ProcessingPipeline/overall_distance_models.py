@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
-import pickle
+import bz2
+import cPickle as pickle
 
 def convert_cats(cat,dist,shot):
     if cat in ['Green Side Bunker','Fairway Bunker']:
@@ -29,5 +30,5 @@ for cat in cats:
     overall_models[cat].fit(data[data.Cat==cat].Distance_from_hole,data[data.Cat==cat].Shots_taken_from_location)
 
 for cat in overall_models:
-	with open('overall_distance_models/%s.pkl' % cat,'w') as pickleFile:
+	with bz2.BZ2File('overall_distance_models/%s.pbz2', 'w') as pickleFile:
 		pickle.dump(overall_models[cat],pickleFile)

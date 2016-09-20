@@ -15,7 +15,7 @@ def dict_compare(d1, d2):
     return len(same), len(different), different
 
 
-for year in range(2003,2017):
+for year in range(2016,2017):
 	print year
 
 	data = pd.read_csv('data/%d.csv' % (year,)) 

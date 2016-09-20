@@ -194,7 +194,7 @@ class Impute_a_Hole (object):
         self.z_of_closest = self.sorted_df.Z_Coordinate.values[0]
 
 
-for year in range(2003,2017):
+for year in range(2016,2017):
     print year
     data = e.make_df(year,verbose=True)
     uCRHtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole)))
