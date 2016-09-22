@@ -36,15 +36,15 @@ if __name__=='__main__':
     # cats['approach'] = 'Broadie_cat=="Approach-the-Green"'
     # cats['around_green'] = 'Broadie_cat=="Around-the-Green"'
 
-    def convert_broadie_cats(cat,dist,par):
-        if cat=='Green':
-            return 'Putting'
-        elif cat=='Tee Box' and (par==4 or par==5):
-            return 'Off-the-Tee'
-        elif dist>135:
-            return 'Approach-the-Green'
-        else:
-            return 'Around-the-Green'
+    # def convert_broadie_cats(cat,dist,par):
+    #     if cat=='Green':
+    #         return 'Putting'
+    #     elif cat=='Tee Box' and (par==4 or par==5):
+    #         return 'Off-the-Tee'
+    #     elif dist>135:
+    #         return 'Approach-the-Green'
+    #     else:
+    #         return 'Around-the-Green'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
@@ -93,7 +93,7 @@ if __name__=='__main__':
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
-    data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
+    #data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
     n_players = len(inds)
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)

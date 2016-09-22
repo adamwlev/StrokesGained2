@@ -14,7 +14,7 @@ from collections import defaultdict
 #     else:
 #         return 'Around-the-Green'
 
-def convert_adam_cat(cat,dist,par):
+def convert_adam_cats(cat,dist,par):
     if cat=="Fringe" or cat=="Green":
         if dist<5:
             return 'green0'
