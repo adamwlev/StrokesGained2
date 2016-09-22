@@ -41,7 +41,7 @@ if __name__=='__main__':
     print cat
     epsilon,a,beta = tuple(map(float,[epsilon,a,beta]))
 
-    key = pd.read_csv('./../cats/cats_b%g/key_file.csv' % (epsilon,),header=None,index_col=0)
+    key = pd.read_csv('./../cats/cats%g/key_file.csv' % (epsilon,),header=None,index_col=0)
     key_dict = {tuple(value):key for key,value in key.T.to_dict('list').iteritems()}
 
     n_players = len(num_to_ind)
@@ -61,7 +61,7 @@ if __name__=='__main__':
             for j in holes_to_inflate:
                 ind = key_dict[j]
                 for c in cats[cat]:
-                    fname = './../cats/cats_b%g/%s_%d.npz' % (epsilon,c,ind)
+                    fname = './../cats/cats%g/%s_%d.npz' % (epsilon,c,ind)
                     if not os.path.isfile(fname):
                         continue
                     mat += bmat([[load_sparse_csc(fname)*my_norm(tournament_group-k,beta)] for k in range(1,n_tournament_groups+1)],format='csc')
@@ -151,8 +151,8 @@ if __name__=='__main__':
             ranks.append(res[0])
             reps.append(res[1])
 
-    if not os.path.exists('./../ranks/ranksb-%g-%g-%g' % (epsilon,a,beta)):
-        os.makedirs('./../ranks/ranksb-%g-%g-%g' % (epsilon,a,beta))
+    if not os.path.exists('./../ranks/ranks-%g-%g-%g' % (epsilon,a,beta)):
+        os.makedirs('./../ranks/ranks-%g-%g-%g' % (epsilon,a,beta))
         
-    np.save('./../ranks/ranksb-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
-    np.save('./../ranks/ranksb-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
+    np.save('./../ranks/ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
+    np.save('./../ranks/ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
