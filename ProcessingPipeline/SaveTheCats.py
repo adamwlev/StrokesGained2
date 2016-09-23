@@ -31,20 +31,6 @@ if __name__=='__main__':
     cats['tee3'] = 'Cat=="Tee Box" & Par_Value==3'
     cats['tee45'] = 'Cat=="Tee Box" & (Par_Value==4 | Par_Value==5)'
     cats['other'] = 'Cat=="Other"'
-    # cats['putting'] = 'Broadie_cat=="Putting"'
-    # cats['tee'] = 'Broadie_cat=="Off-the-Tee"'
-    # cats['approach'] = 'Broadie_cat=="Approach-the-Green"'
-    # cats['around_green'] = 'Broadie_cat=="Around-the-Green"'
-
-    # def convert_broadie_cats(cat,dist,par):
-    #     if cat=='Green':
-    #         return 'Putting'
-    #     elif cat=='Tee Box' and (par==4 or par==5):
-    #         return 'Off-the-Tee'
-    #     elif dist>135:
-    #         return 'Approach-the-Green'
-    #     else:
-    #         return 'Around-the-Green'
 
     def partition (lst, n):
         return [lst[i::n] for i in xrange(n)]
@@ -52,19 +38,21 @@ if __name__=='__main__':
     def run_a_slice(slice):
         def get_matrix(tup,conditon):
             year,tournament,round,course,hole = tup
-            subset = data.query(condition)[['Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Player_Index']].values
-            arr = np.zeros((n_players,n_players))
+            subset = data.query(condition)[['Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index']].values
+            arr,arr1 = np.zeros((n_players,n_players)),np.zeros((n_players,n_players))
             dists = squareform(pdist(subset[:,0:2]))
             inds = [(i,j) for i,j in itertools.product(xrange(len(dists)),xrange(len(dists))) if i!=j and dists[i,j]<epsilon*subset[i,2] and dists[i,j]<epsilon*subset[j,2]]
             for i,j in inds:
                 if arr[i,j]!=0:
                     continue
-                arr[int(subset[i,4]),int(subset[j,4])] += 1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5
+                w = 1/(dists[i,j]**e_d + np.abs(subset[i,4]-subset[j,4])**e_t)
+                arr[int(subset[i,5]),int(subset[j,5])] += w/(1.0 + math.exp(subset[j,3]-subset[i,3]))
+                arr1[int(subset[i,5]),int(subset[j,5])] += w
             if (arr!=0).sum()==0:
                 return
             else:
-                mat = csc_matrix(arr)
-                return mat
+                mat,mat1 = csc_matrix(arr),csc_matrix(arr1)
+                return (mat,mat1)
 
         def save_sparse_csc(filename,array):
             np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
@@ -73,7 +61,7 @@ if __name__=='__main__':
         for ind,tup in slice:
             for cat in cats:
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
-                mat = get_matrix(tuple(tup),condition)
+                mat,mat1 = get_matrix(tuple(tup),condition)
                 gc.collect()
                 try:
                     mat.data
@@ -81,9 +69,10 @@ if __name__=='__main__':
                     continue
                 else:
                     save_sparse_csc('./../cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
+                    save_sparse_csc('./../cats%g/%s_%d_g' % (epsilon*100,cat,ind),mat1)
         return
 
-    _,epsilon = sys.argv
+    _,epsilon,e_d,e_t = sys.argv
     if os.path.isfile('./../cats%s' % (epsilon,)):
         sys.exit('File already exists.')
     else:
@@ -93,7 +82,7 @@ if __name__=='__main__':
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
-    #data.insert(len(data.columns),'Broadie_cat',[convert_broadie_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
+    data.Time = data.Time.values/100 * 60 + data.Time.values%100
     n_players = len(inds)
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)
