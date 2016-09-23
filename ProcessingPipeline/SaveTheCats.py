@@ -68,16 +68,17 @@ if __name__=='__main__':
                 except:
                     continue
                 else:
-                    save_sparse_csc('./../cats_w%g/%s_%d' % (epsilon*100,cat,ind),mat)
-                    save_sparse_csc('./../cats_w%g/%s_%d_g' % (epsilon*100,cat,ind),mat1)
+                    save_sparse_csc('./../cats_w%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,cat,ind),mat)
+                    save_sparse_csc('./../cats_w%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,cat,ind),mat1)
         return
 
     _,epsilon,e_d,e_t = sys.argv
-    if os.path.isfile('./../cats_w%s' % (epsilon,)):
+    if os.path.isfile('./../cats_w%s-%s-%s' % (epsilon,e_d,e_t)):
         sys.exit('File already exists.')
     else:
-        os.makedirs('./../cats_w%s' % (epsilon,))
+        os.makedirs('./../cats_w%s-%s-%s' % (epsilon,e_d,e_t))
     epsilon = float(epsilon)/100
+    e_d,e_t = float(e_d),float(e_t)
     data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
