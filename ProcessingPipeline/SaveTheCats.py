@@ -88,7 +88,7 @@ if __name__=='__main__':
     hole_tups = data[['Year','Permanent_Tournament_','Round','Course_','Hole']].drop_duplicates().reset_index().drop('index',axis=1).T.to_dict('list').items()
     hole_tups = sorted(hole_tups)
     print len(hole_tups)
-    with open('./../cats%g/key_file.csv' % (epsilon*100,),'w') as keyFile:
+    with open('./../cats_w%g-%g-%g/key_file.csv' % (epsilon*100,e_d,e_t),'w') as keyFile:
         for tup in hole_tups:
             keyFile.write(','.join(map(str,[tup[0]] + tup[1])) + '\n')
 
