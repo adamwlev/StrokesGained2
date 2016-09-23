@@ -45,7 +45,7 @@ if __name__=='__main__':
             for i,j in inds:
                 if arr[i,j]!=0:
                     continue
-                w = 1/(dists[i,j]**e_d + np.abs(subset[i,4]-subset[j,4])**e_t)
+                w = 1/((dists[i,j]/((subset[i,2]+subset[j,2])/2))**e_d + (np.abs(subset[i,4]-subset[j,4])/1000.0)**e_t)
                 arr[int(subset[i,5]),int(subset[j,5])] += w/(1.0 + math.exp(subset[j,3]-subset[i,3]))
                 arr1[int(subset[i,5]),int(subset[j,5])] += w
             if (arr!=0).sum()==0:
