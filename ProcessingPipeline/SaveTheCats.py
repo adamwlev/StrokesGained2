@@ -61,10 +61,9 @@ if __name__=='__main__':
         for ind,tup in slice:
             for cat in cats:
                 condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[cat] 
-                mat,mat1 = get_matrix(tuple(tup),condition)
-                gc.collect()
                 try:
-                    mat.data
+                    mat,mat1 = get_matrix(tuple(tup),condition)
+                    gc.collect()
                 except:
                     continue
                 else:
