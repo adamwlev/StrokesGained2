@@ -68,15 +68,15 @@ if __name__=='__main__':
                 except:
                     continue
                 else:
-                    save_sparse_csc('./../cats%g/%s_%d' % (epsilon*100,cat,ind),mat)
-                    save_sparse_csc('./../cats%g/%s_%d_g' % (epsilon*100,cat,ind),mat1)
+                    save_sparse_csc('./../cats_w%g/%s_%d' % (epsilon*100,cat,ind),mat)
+                    save_sparse_csc('./../cats_w%g/%s_%d_g' % (epsilon*100,cat,ind),mat1)
         return
 
     _,epsilon,e_d,e_t = sys.argv
-    if os.path.isfile('./../cats%s' % (epsilon,)):
+    if os.path.isfile('./../cats_w%s' % (epsilon,)):
         sys.exit('File already exists.')
     else:
-        os.makedirs('./../cats%s' % (epsilon,))
+        os.makedirs('./../cats_w%s' % (epsilon,))
     epsilon = float(epsilon)/100
     data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
