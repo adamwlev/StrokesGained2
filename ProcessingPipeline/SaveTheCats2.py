@@ -64,8 +64,8 @@ if __name__=='__main__':
                 for i,j in inds:
                     if arr[int(subset[i,5]),int(subset[j,5])]!=0:
                         continue
-                    w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2))**e_d
-                    w_2 = 1/(np.abs(subset[i,4]-subset[j,4])/100.0)**e_t
+                    w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .002)**e_d
+                    w_2 = 1/(np.abs(subset[i,4]-subset[j,4]+5)/100.0)**e_t
                     w = w_1*w_d + w_2*(1-w_d)
                     arr[int(subset[i,5]),int(subset[j,5])] += w/(1.0 + math.exp(subset[j,3]-subset[i,3]))
                     arr1[int(subset[i,5]),int(subset[j,5])] += w
@@ -130,7 +130,7 @@ if __name__=='__main__':
        tournament_groups[current_group].add(tuple(tup[0:2]))
        holes_to_inflate.append(tuple(tup))
 
-    num_cores = 5
+    num_cores = 9
     slices = partition(group_to_tups.items(),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
