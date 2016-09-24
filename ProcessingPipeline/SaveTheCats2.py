@@ -81,7 +81,9 @@ if __name__=='__main__':
                 mat,mat1 = None,None
                 for small_cat in meta_cats[big_cat]:
                     condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[small_cat] 
-                    if not mat:
+                    try:
+                        mat.data
+                    except:
                         mat,mat1 = get_matrix(tups,condition)
                     else:
                         res = get_matrix(tups,condition)
