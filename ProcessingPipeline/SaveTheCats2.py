@@ -105,7 +105,7 @@ if __name__=='__main__':
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
     data.Time = data.Time.values/100 * 60 + data.Time.values%100
-    data = data[['Cat','Year','Round','Permanent_Tournament_','Course_','Hole','Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index']]
+    data = data[['Cat','Year','Round','Permanent_Tournament_','Course_','Hole','Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index','Par_Value']]
     gc.collect()
 
     with open('./../hole_tups.pkl','r') as pickleFile:
