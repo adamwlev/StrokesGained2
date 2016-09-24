@@ -130,7 +130,7 @@ if __name__=='__main__':
        tournament_groups[current_group].add(tuple(tup[0:2]))
        holes_to_inflate.append(tuple(tup))
 
-    num_cores = multiprocessing.cpu_count()-1
+    num_cores = 18
     slices = partition(group_to_tups.items(),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
