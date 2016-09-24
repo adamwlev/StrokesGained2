@@ -7,6 +7,7 @@ from scipy.spatial.distance import pdist,squareform
 import os,sys
 import multiprocessing
 import gc
+import pickle
     
 if __name__=='__main__':
     cats = {}
