@@ -83,8 +83,10 @@ if __name__=='__main__':
                         mat.data
                     except:
                         mat,mat1 = get_matrix(tups,condition)
+                        gc.collect()
                     else:
                         res = get_matrix(tups,condition)
+                        gc.collect()
                         mat += res[0]
                         mat1 += res[1]
                 save_sparse_csc('./../cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,big_cat,group),mat)
