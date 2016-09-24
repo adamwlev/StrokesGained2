@@ -89,8 +89,8 @@ if __name__=='__main__':
                         res = get_matrix(tups,condition)
                         mat += res[0]
                         mat1 += res[1]
-                save_sparse_csc('./../cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,cat,group),mat)
-                save_sparse_csc('./../cats_w%g-%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,w_d,cat,group),mat1)
+                save_sparse_csc('./../cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,big_cat,group),mat)
+                save_sparse_csc('./../cats_w%g-%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,w_d,big_cat,group),mat1)
         return
 
     _,epsilon,e_d,e_t,w_d = sys.argv
