@@ -55,7 +55,7 @@ if __name__=='__main__':
 
     def run_a_slice(slice):
         def get_matrix(tups,conditon):
-            arr,arr1 = np.empty((n_players,n_players)),np.empty((n_players,n_players))
+            arr,arr1 = np.zeros((n_players,n_players)),np.zeros((n_players,n_players))
             for tup in tups:
                 year,tournament,round,course,hole = tup
                 subset = data.query(condition)[['Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index']].values
