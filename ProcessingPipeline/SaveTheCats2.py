@@ -62,7 +62,7 @@ if __name__=='__main__':
                 dists = squareform(pdist(subset[:,0:2]))
                 inds = [(i,j) for i,j in itertools.product(xrange(len(dists)),xrange(len(dists))) if i!=j and dists[i,j]<epsilon*subset[i,2] and dists[i,j]<epsilon*subset[j,2]]
                 for i,j in inds:
-                    if arr[i,j]!=0:
+                    if arr[int(subset[i,5]),int(subset[j,5])]!=0:
                         continue
                     w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2))**e_d
                     w_2 = 1/(np.abs(subset[i,4]-subset[j,4])/100.0)**e_t
@@ -128,7 +128,7 @@ if __name__=='__main__':
        tournament_groups[current_group].add(tuple(tup[0:2]))
        holes_to_inflate.append(tuple(tup))
 
-    num_cores = multiprocessing.cpu_count()-1
+    num_cores = 5
     slices = partition(group_to_tups.items(),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
