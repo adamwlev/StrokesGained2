@@ -97,7 +97,7 @@ if __name__=='__main__':
     else:
         os.makedirs('./../cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d))
     epsilon = float(epsilon)/100
-    e_d,e_t = float(e_d),float(e_t)
+    e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
     data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     inds = {num:ind for ind,num in enumerate(pd.unique(data.Player_))}
