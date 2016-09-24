@@ -102,6 +102,8 @@ if __name__=='__main__':
     data.insert(5,'Player_Index',[inds[num] for num in data.Player_])
     data.Time = data.Time.values/100 * 60 + data.Time.values%100
     
+    with open('./../hole_tups.pkl','r') as pickleFile:
+        hole_tups = pickle.load(pickleFile)
     n_players = len(inds)
     n_holes = len(hole_tups)
     n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
