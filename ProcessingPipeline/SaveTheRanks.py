@@ -11,9 +11,6 @@ import gc
 import os,sys
 
 if __name__=="__main__":
-	cats = ['tee45','tee3','green0','green5','green10','green20','rough0','rough90',
-			'rough375','fairway0','fairway300','fairway540','bunker','other']
-
 	def my_norm(x,BETA):
 	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
@@ -57,33 +54,30 @@ if __name__=="__main__":
 	window_size = 28
 	n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
 
-	_,epsilon,e_d,e_t,w_d,a,beta = sys.argv
+	_,cat,epsilon,e_d,e_t,w_d,a,beta = sys.argv
 	if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
 	    os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
 
 	a,beta = tuple(map(float,[a,beta]))
-	for cat in cats:
-		print cat
-		ranks,reps = [],[]
-		A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournament_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
-		G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournament_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
-		for group in range(1,n_tournament_groups):
-		    min_ = max(0,group-window_size)*n_players
-		    max_ = group*n_players
-		    A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
-		    if group==1:
-		        res = solve(A_,G_,a,1)
-		        ranks.append(res[0])
-		        reps.append(res[1])
-		    else:
-		        w_a_approx = np.append(solve.w_a[0 if group<=window_size else n_players:],solve.w_a[-n_players:])
-		        w_g_approx = np.append(solve.w_g[0 if group<=window_size else n_players:],solve.w_g[-n_players:])
-		        res = solve(A_,G_,a,1,w_a_approx,w_g_approx)
-		        ranks.append(res[0])
-		        reps.append(res[1])
-		np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_ranks.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(ranks).T)
-		np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_reps.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(reps).T)
-        A,G = None,None
-        gc.collect()
+	print cat
+	ranks,reps = [],[]
+	A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournament_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
+	G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournament_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
+	for group in range(1,n_tournament_groups):
+	    min_ = max(0,group-window_size)*n_players
+	    max_ = group*n_players
+	    A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
+	    if group==1:
+	        res = solve(A_,G_,a,1)
+	        ranks.append(res[0])
+	        reps.append(res[1])
+	    else:
+	        w_a_approx = np.append(solve.w_a[0 if group<=window_size else n_players:],solve.w_a[-n_players:])
+	        w_g_approx = np.append(solve.w_g[0 if group<=window_size else n_players:],solve.w_g[-n_players:])
+	        res = solve(A_,G_,a,1,w_a_approx,w_g_approx)
+	        ranks.append(res[0])
+	        reps.append(res[1])
+	np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_ranks.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(ranks).T)
+	np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_reps.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(reps).T)
 
 	
