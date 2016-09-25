@@ -26,6 +26,9 @@ if __name__=='__main__':
         np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
         return
 
+    def my_norm(x,BETA):
+        return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
+
     with open('./../hole_tups.pkl','r') as pickleFile:
         hole_tups = pickle.load(pickleFile)
     
@@ -36,11 +39,11 @@ if __name__=='__main__':
     n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
 
     for cat in cats:
-        A = bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % ((epsilon,e_d,e_t,w_d,cat,group))) for group in range(1,n_tournament_groups)]],format='csc')
+        A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournaments_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
         save_sparse_csc('./../mats/mats%s-%s-%s-%s-%g/%s_A' % (epsilon,e_d,e_t,w_d,beta,cat),A)
         A = None
         gc.collect()
-        G = bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % ((epsilon,e_d,e_t,w_d,cat,group))) for group in range(1,n_tournament_groups)]],format='csc')
+        G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(1,n_tournaments_groups)]) for group in range(1,n_tournament_groups)]],format='csc')
         save_sparse_csc('./../mats/mats%s-%s-%s-%s-%g/%s_G' % (epsilon,e_d,e_t,w_d,beta,cat),G)
         G = None
         gc.collect()
