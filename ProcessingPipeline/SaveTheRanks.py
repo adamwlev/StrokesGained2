@@ -16,7 +16,7 @@ if __name__=="__main__":
 
 	def my_norm(x,BETA):
 	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
-	    
+
 	def alpha(A,a):
 	    A.data[A.data<1e-6] = 0
 	    A.data[np.isnan(A.data)]=0
@@ -46,7 +46,11 @@ if __name__=="__main__":
 
 	with open('./../hole_tups.pkl','r') as pickleFile:
 	    hole_tups = pickle.load(pickleFile)
+
+	with open('./../num_to_ind.pkl','r') as pickleFile:
+	    num_to_ind = pickle.load(pickleFile)
 	
+	n_players = len(num_to_ind)
 	n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
 
 	bin_size = 4
