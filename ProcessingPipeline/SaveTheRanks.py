@@ -58,6 +58,11 @@ if __name__=="__main__":
 	n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
 
 	_,epsilon,e_d,e_t,w_d,a,beta = sys.argv
+	if os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
+	    pass
+	else:
+	    os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
+
 	a,beta = tuple(map(float,[a,beta]))
 	for cat in cats:
 		print cat
