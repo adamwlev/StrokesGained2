@@ -58,9 +58,7 @@ if __name__=="__main__":
 	n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
 
 	_,epsilon,e_d,e_t,w_d,a,beta = sys.argv
-	if os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
-	    pass
-	else:
+	if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
 	    os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
 
 	a,beta = tuple(map(float,[a,beta]))
@@ -85,6 +83,7 @@ if __name__=="__main__":
 		        reps.append(res[1])
 		np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_ranks.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(ranks).T)
 		np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_reps.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(reps).T)
-
+        A,G = None,None
+        gc.collect()
 
 	
