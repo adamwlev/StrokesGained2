@@ -24,6 +24,15 @@ if __name__=='__main__':
         np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
         return
 
+    with open('./../hole_tups.pkl','r') as pickleFile:
+        hole_tups = pickle.load(pickleFile)
+    
+    n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
+
+    bin_size = 4
+    window_size = 28
+    n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
+
     for cat in cats:
         A = bmat([[load_sparse_csc('./../cats_w%s-%s-%s-%s/%s_%d.npz' % ((epsilon,e_d,e_t,w_d,cat,group))) for group in range(1,n_tournament_groups)]],format='csc')
         save_sparse_csc('./../mats%s-%s-%s-%s-%g/%s_A' % (epsilon,e_d,e_t,w_d,beta,cat),A)
