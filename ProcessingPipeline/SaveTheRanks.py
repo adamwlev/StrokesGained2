@@ -11,7 +11,7 @@ import gc
 import os,sys
 
 if __name__=="__main__":
-	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
+	cats = ['tee45','tee3','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
 
 	def my_norm(x,BETA):
