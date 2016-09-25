@@ -14,6 +14,9 @@ if __name__=="__main__":
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
 
+	def my_norm(x,BETA):
+	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
+	    
 	def alpha(A,a):
 	    A.data[A.data<1e-6] = 0
 	    A.data[np.isnan(A.data)]=0
