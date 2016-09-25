@@ -6,7 +6,7 @@ import os,sys
 
 if __name__=='__main__':
     _,epsilon,e_d,e_t,w_d,beta = sys.argv
-    if os.path.isfile('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta)):
+    if os.path.exists('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta)):
         pass
     else:
         os.makedirs('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta))
