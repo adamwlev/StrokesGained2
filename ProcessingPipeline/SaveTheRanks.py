@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 from scipy.sparse import csc_matrix,csr_matrix,eye,bmat
-from scipy.sparse.linalg import eigs,inv,gmres,LinearOperator,spilu
+from scipy.sparse.linalg import eigs,inv,gmres,LinearOperator,spsolve
 from scipy.stats import norm
 import pickle
 from collections import defaultdict
@@ -36,14 +36,14 @@ if __name__=="__main__":
             mat_1.data[np.isnan(mat_1.data)] = 0
             
             S = eye(mat.shape[0],format='csc')-alpha(mat,a)*mat
-            M = spilu(S)
-            M_x = lambda x: M.solve(x)
+            M2 = spilu(S)
+            M_x = lambda x: M2.solve(x)
             M = LinearOperator(S.shape, M_x)
             w_a = gmres(S,mat.sum(1),x0=x_guess,M=M)[0]
             
             S = eye(mat_1.shape[0],format='csc')-alpha(mat_1,a)*mat_1 
-            M = spilu(S)
-            M_x = lambda x: M.solve(x)
+            M2 = spilu(S)
+            M_x = lambda x: M2.solve(x)
             M = LinearOperator(S.shape, M_x)
             w_g = gmres(S,mat_1.sum(1),x0=x_guess1,M=M)[0]
             
