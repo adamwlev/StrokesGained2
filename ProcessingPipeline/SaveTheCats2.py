@@ -62,7 +62,7 @@ if __name__=='__main__':
                 dists = squareform(pdist(subset[:,0:2]))
                 inds = [(i,j) for i,j in itertools.product(xrange(len(dists)),xrange(len(dists))) if i!=j and dists[i,j]<epsilon*subset[i,2] and dists[i,j]<epsilon*subset[j,2]]
                 for i,j in inds:
-                    w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .01)**e_d
+                    w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .05)**e_d
                     w_2 = 1/((np.abs(subset[i,4]-subset[j,4])+5)/100.0)**e_t
                     w = w_1*w_d + w_2*(1-w_d)
                     arr[int(subset[i,5]),int(subset[j,5])] += w/(1.0 + math.exp(subset[j,3]-subset[i,3]))
