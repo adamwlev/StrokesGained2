@@ -3,6 +3,7 @@ import numpy as np
 from scipy.sparse import csc_matrix,bmat
 import gc
 import os,sys
+import pickle
 
 if __name__=='__main__':
     _,epsilon,e_d,e_t,w_d,beta = sys.argv
