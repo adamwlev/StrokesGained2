@@ -4,6 +4,7 @@ from scipy.sparse import csc_matrix,bmat
 import gc
 import os,sys
 import pickle
+import math
 
 if __name__=='__main__':
     _,epsilon,e_d,e_t,w_d,beta = sys.argv
