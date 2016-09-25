@@ -8,10 +8,10 @@ import math
 
 if __name__=='__main__':
     _,epsilon,e_d,e_t,w_d,beta = sys.argv
-    if os.path.exists('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta)):
+    if os.path.exists('./../mats/mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta)):
         pass
     else:
-        os.makedirs('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta))
+        os.makedirs('./../mats/mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta))
 
     beta = float(beta)
 
@@ -37,10 +37,10 @@ if __name__=='__main__':
 
     for cat in cats:
         A = bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % ((epsilon,e_d,e_t,w_d,cat,group))) for group in range(1,n_tournament_groups)]],format='csc')
-        save_sparse_csc('./../mats%s-%s-%s-%s-%g/%s_A' % (epsilon,e_d,e_t,w_d,beta,cat),A)
+        save_sparse_csc('./../mats/mats%s-%s-%s-%s-%g/%s_A' % (epsilon,e_d,e_t,w_d,beta,cat),A)
         A = None
         gc.collect()
         G = bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % ((epsilon,e_d,e_t,w_d,cat,group))) for group in range(1,n_tournament_groups)]],format='csc')
-        save_sparse_csc('./../mats%s-%s-%s-%s-%g/%s_G' % (epsilon,e_d,e_t,w_d,beta,cat),G)
+        save_sparse_csc('./../mats/mats%s-%s-%s-%s-%g/%s_G' % (epsilon,e_d,e_t,w_d,beta,cat),G)
         G = None
         gc.collect()
