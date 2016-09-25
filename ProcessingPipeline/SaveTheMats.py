@@ -5,7 +5,7 @@ import gc
 import os,sys
 
 if __name__=='__main__':
-    _,epsilon,e_d,e_t,a,beta = sys.argv
+    _,epsilon,e_d,e_t,w_d,beta = sys.argv
     if os.path.isfile('./../mats%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,beta)):
         sys.exit('File already exists.')
     else:
