@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 from scipy.sparse import csc_matrix,csr_matrix,eye,bmat
-from scipy.sparse.linalg import eigs,inv,gmres,LinearOperator,spsolve
+from scipy.sparse.linalg import eigs,inv,gmres,LinearOperator,spilu
 from scipy.stats import norm
 import pickle
 from collections import defaultdict
