@@ -86,7 +86,7 @@ def run_a_slice(slice):
 def partition (lst, n):
 	return [lst[i::n] for i in xrange(n)]
 
-for YEAR in range(2004,2017):
+for YEAR in range(2008,2017):
 	data = pd.read_csv('./../data/%d.csv' % YEAR)
 
 	#data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
@@ -106,7 +106,7 @@ for YEAR in range(2004,2017):
 	overall_just_dist = IsotonicRegression(out_of_bounds='clip')
 	overall_just_dist.fit(data[:,8],data[:,7])
 
-	num_cores = multiprocessing.cpu_count()
+	num_cores = multiprocessing.cpu_count()-3
 	slices = partition(uCRHYtps,num_cores)
 	pool = multiprocessing.Pool(num_cores)
 	results = pool.map(run_a_slice, slices)
