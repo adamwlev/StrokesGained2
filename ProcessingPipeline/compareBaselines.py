@@ -33,6 +33,13 @@ for year in range(2004,2017):
 	data = None
 	gc.collect()
 
-	print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2)
-	print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2)
+def confidence_interval_mean(sample,its,p):
+    means = []
+    for _ in xrange(its):
+        mean = np.mean(np.random.choice(sample,len(sample)))
+        means.append(mean)
+    return np.percentile(means,[(100.0-p)/2,(p+100.0)/2])
+
+print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2),confidence_interval_mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2,10000,95)
+print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2),confidence_interval_mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2,10000,95)
 
