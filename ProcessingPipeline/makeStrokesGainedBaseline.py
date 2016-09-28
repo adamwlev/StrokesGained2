@@ -86,7 +86,7 @@ def run_a_slice(slice):
 def partition (lst, n):
 	return [lst[i::n] for i in xrange(n)]
 
-for YEAR in range(2008,2017):
+for YEAR in range(2013,2017):
 	print YEAR
 	data = pd.read_csv('./../data/%d.csv' % YEAR)
 
