@@ -15,7 +15,7 @@ model_prediction = []
 broadie_prediction = []
 for year in range(2004,2017):
 	data = pd.read_csv('./../data_old/%d.csv' % year)
-	data.insert(len(data.columns),'Strokes_Gained/Baseline',[broadie_baseline[tup] for tup in data[['Year','Course_#','Player_#','Hole','Round','Shot']].values.tolist()])
+	data.insert(len(data.columns),'Strokes_Gained/Baseline',[broadie_baseline[tuple(tup)] for tup in data[['Year','Course_#','Player_#','Hole','Round','Shot']].values.tolist()])
 	data.insert(len(data.columns),'Difficulty_Start_broadie',[0]*len(data))
 	data.loc[data.Shot==data.Hole_Score,'Difficulty_Start_broadie'] = data[data.Shot==data.Hole_Score]['Strokes_Gained/Baseline'] + 1
 	data=data.sort_values(['Player_#','Course_#','Round','Hole'])
@@ -29,4 +29,7 @@ for year in range(2004,2017):
 	broadie_prediction.extend(data.Difficulty_Start_broadie.values.tolist())
 	data = None
 	gc.collect()
+
+print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2)
+print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2)
 
