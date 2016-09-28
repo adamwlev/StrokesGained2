@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 def make_df (y,verbose=True):
-    data = pd.read_csv('data/rawdata/'+str(y)+'.txt', sep = ';') ## read in data
+    data = pd.read_csv('./../data/rawdata/'+str(y)+'.txt', sep = ';') ## read in data
     before = len(data) ##len before
     print before
     ##processing

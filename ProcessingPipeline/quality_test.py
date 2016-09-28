@@ -15,10 +15,10 @@ def dict_compare(d1, d2):
     return len(same), len(different), different
 
 
-for year in range(2016,2017):
+for year in range(2015,2016):
 	print year
 
-	data = pd.read_csv('data/%d.csv' % (year,)) 
+	data = pd.read_csv('./../data/%d.csv' % (year,)) 
 
 	id_cols = ['Course_#','Player_#','Hole','Round','Shot']
 
@@ -45,6 +45,11 @@ for year in range(2016,2017):
 	try:
 		assert hole_scores==dict(shots_in_data)
 	except:
-		print dict_compare(hole_scores,dict(shots_in_data))
+		res = dict_compare(hole_scores,dict(shots_in_data))
+		print res
+		print 'Dropping these %d Player-Holes.' % res[1]
+		to_drop = np.array([tuple(tup) in res[2] for tup in data[['Course_#','Player_#','Round','Hole']].values.tolist()])
+		data = data[~to_drop]
+		data.to_csv('./../data/%d.csv' % year,index=False)
 	else:
 		print 'Passed completeness and non duplicate shots test.'
