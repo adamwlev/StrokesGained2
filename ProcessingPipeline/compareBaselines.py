@@ -6,7 +6,7 @@ broadie_baseline = {}
 
 for year in range(2004,2017):
 	data = pd.read_csv('./../data/%d.csv' % year)
-	broadie_baseline.update({tuple(tup[:-1]):tup[-1] for tup in data[['Year','Course_#','Player_Number','Hole','Round','Shot','Strokes_Gained/Baseline']].values.tolist()})
+	broadie_baseline.update({tuple(tup[:-1]):tup[-1] for tup in data[['Year','Course_#','Player_#','Hole','Round','Shot','Strokes_Gained/Baseline']].values.tolist()})
 	data = None
 	gc.collect()
 
@@ -15,7 +15,7 @@ model_prediction = []
 broadie_prediction = []
 for year in range(2004,2017):
 	data = pd.read_csv('./../data_old/%d.csv' % year)
-	data.insert(len(data.columns),'Strokes_Gained/Baseline',[broadie_baseline[tup] for tup in data[['Year','Course_#','Player_Number','Hole','Round','Shot']].values.tolist()])
+	data.insert(len(data.columns),'Strokes_Gained/Baseline',[broadie_baseline[tup] for tup in data[['Year','Course_#','Player_#','Hole','Round','Shot']].values.tolist()])
 	data.insert(len(data.columns),'Difficulty_Start_broadie',[0]*len(data))
 	data.loc[data.Shot==data.Hole_Score,'Difficulty_Start_broadie'] = data[data.Shot==data.Hole_Score]['Strokes_Gained/Baseline'] + 1
 	data=data.sort_values(['Player_#','Course_#','Round','Hole'])
