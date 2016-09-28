@@ -4,8 +4,6 @@ import itertools
 from math import atan2,radians
 from sklearn.isotonic import IsotonicRegression
 import multiprocessing
-import gzip
-import pickle
 
 def convert_cats(cat,dist,shot):
     if cat in ['Green Side Bunker','Fairway Bunker']:
@@ -64,21 +62,22 @@ def run_a_slice(slice):
 
 cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 overall_models = {}
+data = pd.concat([pd.read_csv('./../data/%d.csv' % year)[['From_Location(Scorer)','Distance_from_hole','Shot','Shots_taken_from_location']] for year in range(2004,2017)])
+data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
 for cat in cats:
-    with gzip.open('overall_distance_models/%s.pkl.gz' % cat, 'rb') as pickleFile:
-        overall_models[cat] = pickle.load(pickleFile)
+    overall_models[cat] = IsotonicRegression(out_of_bounds='clip')
+    overall_models[cat].fit(data.Distance_from_hole.values,data.Shots_taken_from_location.values)
 
-for YEAR in range(2009,2010):
+for YEAR in range(2004,2005):
     print YEAR
-    data = pd.read_csv('data/%d.csv' % YEAR)
-
+    data = pd.read_csv('./../data/%d.csv' % YEAR)
     data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
     data.loc[data.Shot==1,'Cat'] = 'Tee Box'
     uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole),pd.unique(data.Year)))
 
     cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 
-    num_cores = multiprocessing.cpu_count()-2
+    num_cores = multiprocessing.cpu_count()-1
     slices = partition(uCRHYtps,num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
@@ -121,4 +120,4 @@ for YEAR in range(2009,2010):
     cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
     data['Strokes_Gained'] = data.Difficulty_Start.values-data.Difficulty_End.values-1
-    data.to_csv('data/%d.csv' % YEAR,index=False)
+    data.to_csv('./../data/%d.csv' % YEAR,index=False)
