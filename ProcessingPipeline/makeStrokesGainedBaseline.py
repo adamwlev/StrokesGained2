@@ -86,8 +86,8 @@ def run_a_slice(slice):
 def partition (lst, n):
 	return [lst[i::n] for i in xrange(n)]
 
-for YEAR in range(2016,2017):
-	data = pd.read_csv('data/%d.csv' % YEAR)
+for YEAR in range(2004,2017):
+	data = pd.read_csv('./../data/%d.csv' % YEAR)
 
 	data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
 
@@ -117,4 +117,4 @@ for YEAR in range(2016,2017):
 	print len(big_dict),len(data)
 	data['Strokes_Gained_h'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
 
-	data.to_csv('data/%d.csv' % YEAR,index=False)
+	data.to_csv('./../data/%d.csv' % YEAR,index=False)
