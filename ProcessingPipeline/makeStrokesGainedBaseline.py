@@ -87,6 +87,7 @@ def partition (lst, n):
 	return [lst[i::n] for i in xrange(n)]
 
 for YEAR in range(2008,2017):
+	print YEAR
 	data = pd.read_csv('./../data/%d.csv' % YEAR)
 
 	#data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
