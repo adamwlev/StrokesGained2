@@ -113,7 +113,7 @@ for YEAR in range(2004,2017):
 
 	big_dict = {key:value for little_dict in results for key,value in little_dict.iteritems()}
 	cols = ['Course_#','Round','Hole','Year','Player_#','Shot']
-	data = pd.read_csv('data/%d.csv' % YEAR)
+	data = pd.read_csv('./../data/%d.csv' % YEAR)
 	print len(big_dict),len(data)
 	data['Strokes_Gained_h'] = [big_dict[tuple(tup)] if tuple(tup) in big_dict else np.nan for tup in data[cols].values.astype(int).tolist()]
 
