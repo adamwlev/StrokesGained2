@@ -89,7 +89,7 @@ def partition (lst, n):
 for YEAR in range(2004,2017):
 	data = pd.read_csv('./../data/%d.csv' % YEAR)
 
-	data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
+	#data.insert(len(data.columns),'Cat',[convert_cats(c,d) for c,d in zip(data['From_Location(Scorer)'],data['Distance_from_hole'])])
 
 	uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole),pd.unique(data.Year)))
 
