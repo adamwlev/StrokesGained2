@@ -46,7 +46,7 @@ sample = (np.array(shots_taken_from_location) - np.array(model_prediction))**2
 print np.mean(sample)
 
 num_cores = multiprocessing.cpu_count()
-slices = [500 for _ in range(num_cores)]
+slices = [50 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(confidence_interval_mean, slices)
 pool.close()
@@ -57,7 +57,7 @@ sample = (np.array(shots_taken_from_location) - np.array(broadie_prediction))**2
 print np.mean(sample)
 
 num_cores = multiprocessing.cpu_count()
-slices = [500 for _ in range(num_cores)]
+slices = [50 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
 pool.close()
 results = pool.map(confidence_interval_mean, slices)
