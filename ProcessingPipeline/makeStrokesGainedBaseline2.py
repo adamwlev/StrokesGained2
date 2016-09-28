@@ -62,7 +62,7 @@ def run_a_slice(slice):
 
 cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 overall_models = {}
-data = pd.concat([pd.read_csv('./../data/%d.csv' % year)[['From_Location(Scorer)','Distance_from_hole','Shot','Shots_taken_from_location']] for year in range(2004,2017)])
+data = pd.concat([pd.read_csv('./../data_new/%d.csv' % year)[['From_Location(Scorer)','Distance_from_hole','Shot','Shots_taken_from_location']] for year in range(2004,2017)])
 data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
 for cat in cats:
     overall_models[cat] = IsotonicRegression(out_of_bounds='clip')
@@ -70,7 +70,7 @@ for cat in cats:
 
 for YEAR in range(2010,2017):
     print YEAR
-    data = pd.read_csv('./../data/%d.csv' % YEAR)
+    data = pd.read_csv('./../data_new/%d.csv' % YEAR)
     data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
     data.loc[data.Shot==1,'Cat'] = 'Tee Box'
     uCRHYtps = list(itertools.product(pd.unique(data['Course_#']),pd.unique(data.Round),pd.unique(data.Hole),pd.unique(data.Year)))
@@ -120,4 +120,4 @@ for YEAR in range(2010,2017):
     cols = ['Course_#','Hole','Round','Player_#','Shot']
     data.loc[data.Shot!=data.Hole_Score,'Difficulty_End'] = [difficulty_dict[tuple(tup[:-1])+tuple([tup[-1]+1])] for tup in data[data.Shot!=data.Hole_Score][cols].values.tolist()]
     data['Strokes_Gained'] = data.Difficulty_Start.values-data.Difficulty_End.values-1
-    data.to_csv('./../data/%d.csv' % YEAR,index=False)
+    data.to_csv('./../data_new/%d.csv' % YEAR,index=False)
