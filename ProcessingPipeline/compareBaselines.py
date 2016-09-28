@@ -33,6 +33,6 @@ for year in range(2004,2017):
 	data = None
 	gc.collect()
 
-print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2)
-print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2)
+	print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2)
+	print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2)
 
