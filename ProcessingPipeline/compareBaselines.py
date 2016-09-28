@@ -46,21 +46,21 @@ sample = (np.array(shots_taken_from_location) - np.array(model_prediction))**2
 print np.mean(sample)
 
 num_cores = multiprocessing.cpu_count()
-slices = [75 for _ in range(num_cores)]
+slices = [350 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(confidence_interval_mean, slices)
 pool.close()
-results = [item for little_list in results for item in little_list]
-print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
+results1 = [item for little_list in results for item in little_list]
 
 sample = (np.array(shots_taken_from_location) - np.array(broadie_prediction))**2
 print np.mean(sample)
 
 num_cores = multiprocessing.cpu_count()
-slices = [75 for _ in range(num_cores)]
+slices = [350 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(confidence_interval_mean, slices)
 pool.close()
-results = [item for little_list in results for item in little_list]
-print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
+results2 = [item for little_list in results for item in little_list]
+
+pd.DataFrame({'means_model':results1,'means_broadie':results2}).to_csv('outMeans.csv',index=False)
 
