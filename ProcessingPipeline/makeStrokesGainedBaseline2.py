@@ -68,7 +68,7 @@ for cat in cats:
     overall_models[cat] = IsotonicRegression(out_of_bounds='clip')
     overall_models[cat].fit(data.Distance_from_hole.values,data.Shots_taken_from_location.values)
 
-for YEAR in range(2004,2005):
+for YEAR in range(2005,2017):
     print YEAR
     data = pd.read_csv('./../data/%d.csv' % YEAR)
     data.insert(len(data.columns),'Cat',[convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)])
