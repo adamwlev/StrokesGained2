@@ -10,7 +10,7 @@ if __name__=="__main__":
 	for cat in cats:
 		subprocess.call(["python","SaveTheRanks.py" ,cat,"90","0.7","0.25","0.8", "0.93","14"])
 
-	for a in ['0.87','0.97']:
-		for beta in ['8','13','16']:
+	for a in ['0.97']:
+		for beta in ['17','7']:
 			for cat in cats:
 				subprocess.call(["python","SaveTheRanks.py" ,cat,"%s" % epsilon,"%s" % e_d,"%s" % e_t,"%s" % w_d, "%s" % a, "%s" % beta])
