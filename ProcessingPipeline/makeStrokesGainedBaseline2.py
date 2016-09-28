@@ -77,7 +77,7 @@ for YEAR in range(2005,2017):
 
     cats = ['Bunker','Other','Green','Fairway','Fringe','Primary Rough','Intermediate Rough']
 
-    num_cores = multiprocessing.cpu_count()-1
+    num_cores = multiprocessing.cpu_count()-2
     slices = partition(uCRHYtps,num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
