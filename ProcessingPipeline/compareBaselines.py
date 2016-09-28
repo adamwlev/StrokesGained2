@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import gc
+import multiprocessing
 
 broadie_baseline = {}
 
@@ -33,13 +34,30 @@ for year in range(2004,2017):
 	data = None
 	gc.collect()
 
-def confidence_interval_mean(sample,its,p):
+def confidence_interval_mean(its):
     means = []
     for _ in xrange(its):
         mean = np.mean(np.random.choice(sample,len(sample)))
         means.append(mean)
-    return np.percentile(means,[(100.0-p)/2,(p+100.0)/2])
+    return means
 
-print np.mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2),confidence_interval_mean((np.array(shots_taken_from_location) - np.array(model_prediction))**2,10000,95)
-print np.mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2),confidence_interval_mean((np.array(shots_taken_from_location) - np.array(broadie_prediction))**2,10000,95)
+sample = (np.array(shots_taken_from_location) - np.array(model_prediction))**2
+print np.mean(sample)
+
+num_cores = multiprocessing.cpu_count()
+slices = [500 for _ in range(num_cores)]
+pool = multiprocessing.Pool(num_cores)
+results = pool.map(confidence_interval_mean, slices)
+results = [item for little_list in results for item in little_list]
+print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
+
+sample = (np.array(shots_taken_from_location) - np.array(broadie_prediction))**2
+print np.mean(sample)
+
+num_cores = multiprocessing.cpu_count()
+slices = [500 for _ in range(num_cores)]
+pool = multiprocessing.Pool(num_cores)
+results = pool.map(confidence_interval_mean, slices)
+results = [item for little_list in results for item in little_list]
+print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
 
