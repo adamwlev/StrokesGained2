@@ -37,6 +37,7 @@ for year in range(2004,2017):
 def confidence_interval_mean(its):
     means = []
     for _ in xrange(its):
+    	print _
         mean = np.mean(np.random.choice(sample,len(sample)))
         means.append(mean)
     return means
@@ -48,6 +49,7 @@ num_cores = multiprocessing.cpu_count()
 slices = [500 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(confidence_interval_mean, slices)
+pool.close()
 results = [item for little_list in results for item in little_list]
 print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
 
@@ -57,6 +59,7 @@ print np.mean(sample)
 num_cores = multiprocessing.cpu_count()
 slices = [500 for _ in range(num_cores)]
 pool = multiprocessing.Pool(num_cores)
+pool.close()
 results = pool.map(confidence_interval_mean, slices)
 results = [item for little_list in results for item in little_list]
 print np.percentile(results,[(100.0-95)/2,(95+100.0)/2])
