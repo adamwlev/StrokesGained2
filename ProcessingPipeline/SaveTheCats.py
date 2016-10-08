@@ -94,7 +94,7 @@ if __name__=='__main__':
         return
 
     _,epsilon,e_d,e_t,w_d = sys.argv
-    if os.path.isfile('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d)):
+    if os.path.exists('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d)):
         sys.exit('File already exists.')
     else:
         os.makedirs('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d))
