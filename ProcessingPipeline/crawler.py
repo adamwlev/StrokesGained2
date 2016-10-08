@@ -36,9 +36,8 @@ if __name__=="__main__":
 			for cat in cats:
 				if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s/%s_ranks.npy' % (eps_,e_d_,e_t_,w_d_,alpha_,beta_,cat)): 
 					subprocess.call(["python","SaveTheRanks.py" ,"%s" % cat,"%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_, "%s" % alpha_, "%s" % beta_])
-					subprocess.call(["rsync","-avL","--progress","-e",'"ssh',"-i",'/home/ubuntu/aws_ds8key.pem"',
-									 "/home/ubuntu/project/Rank_a_Golfer/ranks/ranks-%s-%s-%s-%s-%s-%s" % (eps_,e_d_,e_t_,w_d_,alpha_,beta_),
-									 "ubuntu@ec2-52-23-248-152.compute-1.amazonaws.com:~/project/Rank_a_Golfer/ranks/"])
+					cmd = "rsync -avL --progress -e \"ssh -i /home/ubuntu/aws_ds8key.pem\" /home/ubuntu/project/Rank_a_Golfer/ranks/ranks-%s-%s-%s-%s-%s-%s ubuntu@ec2-52-23-248-152.compute-1.amazonaws.com:~/project/Rank_a_Golfer/ranks/" % (eps_,e_d_,e_t_,w_d_,alpha_,beta_)
+					os.system(cmd)
 			outFile.write("%s-%s-%s-%s-%s-%s-ranks" % (eps_,e_d_,e_t_,w_d_,alpha_,beta_))
 			outFile.write("\n")
 
