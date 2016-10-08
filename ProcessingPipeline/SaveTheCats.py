@@ -76,6 +76,8 @@ if __name__=='__main__':
 
         for group,tups in slice:
             for big_cat in meta_cats:
+                if os.path.exists('./../cats/cats_w%g-%g-%g-%g/%s_%d.npz' % (epsilon*100,e_d,e_t,w_d,big_cat,group)):
+                    continue
                 mat,mat1 = None,None
                 for small_cat in meta_cats[big_cat]:
                     condition = 'Year==@year & Permanent_Tournament_==@tournament & Round==@round & Course_==@course & Hole==@hole & ' + cats[small_cat] 
@@ -97,9 +99,7 @@ if __name__=='__main__':
         return
 
     _,epsilon,e_d,e_t,w_d = sys.argv
-    if os.path.exists('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d)):
-        sys.exit('File already exists.')
-    else:
+    if not os.path.exists('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d)):
         os.makedirs('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d))
     epsilon = float(epsilon)/100
     e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
