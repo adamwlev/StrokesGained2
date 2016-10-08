@@ -91,6 +91,9 @@ if __name__=='__main__':
                         mat1 += res[1]
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,big_cat,group),mat)
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,w_d,big_cat,group),mat1)
+                subprocess.call(["rsync","-avL","--progress","-e",'"ssh',"-i",'/home/ubuntu/aws_ds8key.pem"',
+                                 "/home/ubuntu/project/Rank_a_Golfer/cats/cats_w%g-%g-%g-%g" % (epsilon*100,e_d,e_t,w_d),
+                                 "ubuntu@ec2-52-23-248-152.compute-1.amazonaws.com:~/project/Rank_a_Golfer/cats/"])
         return
 
     _,epsilon,e_d,e_t,w_d = sys.argv
