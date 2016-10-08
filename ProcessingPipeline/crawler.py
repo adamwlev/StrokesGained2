@@ -30,7 +30,7 @@ if __name__=="__main__":
 	for eps_,e_d_,e_t_,w_d_,alpha_,beta_ in itertools.product(*[eps,e_d,e_t,w_d,alpha,beta]):
 		if tuple(map(float,[eps_,e_d_,e_t_,w_d_])) not in done_cats:
 			subprocess.call(["python","SaveTheCats.py","%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_])
-			outFile.write("%s-%s-%s-%s-%s-%s-cats" % (eps_,e_d_,e_t_,w_d_))
+			outFile.write("%s-%s-%s-%s-cats" % (eps_,e_d_,e_t_,w_d_))
 
 		if tuple(map(float,[eps_,e_d_,e_t_,w_d_,alpha_,beta_])) not in done_ranks:
 			for cat in cats:
