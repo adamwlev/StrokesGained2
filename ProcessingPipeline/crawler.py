@@ -15,7 +15,7 @@ if __name__=="__main__":
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
 
-	done_cats,done_ranks = {},{}
+	done_cats,done_ranks = set(),set()
 	if not os.path.exists('outFile.csv'):
 		outFile = open('outFile.csv','w')
 	else:
