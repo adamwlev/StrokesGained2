@@ -21,7 +21,7 @@ if __name__=="__main__":
 	else:
 		with open('outFile.csv','r') as f:
 			for line in f.read().splitlines():
-				if line.stripe().split('-')[-1]=="cats":
+				if line.strip().split('-')[-1]=="cats":
 					done_cats.add(tuple(map(float,line.strip().split('-')[:-1])))
 				else:
 					done_ranks.add(tuple(map(float,line.strip().split('-')[:-1])))
