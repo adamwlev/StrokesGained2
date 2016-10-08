@@ -34,7 +34,7 @@ if __name__=="__main__":
 
 		if tuple(map(float,[eps_,e_d_,e_t_,w_d_,alpha_,beta_])) not in done_ranks:
 			for cat in cats:
-				if not os.path.exists('./../ranks/ranks_%s-%s-%s-%s-%s-%s/%s_ranks.npy' % (eps_,e_d_,e_t_,w_d_,alpha_,beta_,cat)): 
+				if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s/%s_ranks.npy' % (eps_,e_d_,e_t_,w_d_,alpha_,beta_,cat)): 
 					subprocess.call(["python","SaveTheRanks.py" ,"%s" % cat,"%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_, "%s" % alpha_, "%s" % beta_])
 					subprocess.call(["rsync","-avL","--progress","-e",'"ssh',"-i",'/home/ubuntu/aws_ds8key.pem"',
 									 "/home/ubuntu/project/Rank_a_Golfer/ranks/ranks-%s-%s-%s-%s-%s-%s" % (eps_,e_d_,e_t_,w_d_,alpha_,beta_),
