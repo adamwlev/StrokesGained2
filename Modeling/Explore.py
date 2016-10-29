@@ -27,7 +27,7 @@ cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker'
 
 def xgbcv(gamma,max_depth,alpha,lamb,min_child_weight,subsample):
     params = {'objective':'reg:linear','eta':.1,'gamma':gamma,'max_depth':int(max_depth),'alpha':alpha,
-              'lambda':lamb,'min_child_weight':int(min_child_weight),'subsample':subsample}
+              'lambda':lamb,'min_child_weight':int(min_child_weight),'subsample':subsample,'silent':1}
     cv_folds = 5
     early_stopping_rounds = 50
     cv = GroupShuffleSplit(n_splits=cv_folds, test_size=0.2)
