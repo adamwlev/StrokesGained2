@@ -32,7 +32,7 @@ def xgbcv(gamma,max_depth,alpha,lamb,min_child_weight,subsample):
     early_stopping_rounds = 50
     cv = GroupShuffleSplit(n_splits=cv_folds, test_size=0.2)
     errors = []
-    for u,(train,test) in enumerate(cv.split(X,y,groups)):
+    for train,test in cv.split(X,y,groups):
         dtrain = xgb.DMatrix(X[train],label=y[train])
         dtest = xgb.DMatrix(X[test],label=y[test])
         watchlist  = [(dtrain,'train'),(dtest,'eval')]
@@ -48,10 +48,10 @@ for cat in cats:
 	print '******************* DOING %s *******************' % cat
 	result[cat] = {}
 	data_ = data[data.Cat==cat]
-	groups = ['-'.join(map(str,tup)) for tup in data[['Hole','Round','Course_#','Year']].values.tolist()]
+	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
 	groups = le.fit_transform(groups)
-	y = data.Shots_taken_from_location.values
+	y = data_.Shots_taken_from_location.values
 	lb = LabelBinarizer(sparse_output=True)
 
 	if cat=='Green':
