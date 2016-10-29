@@ -1,1 +1,1 @@
-This repo is for my analysis with PGA Tour data. The goal is the rate how good the golfers are at a given moment at different facets of the game. I will have more to come as for a README soon. Hopefully I will also be writing a paper to detail the analysis soon.
+This repo is for my analysis with PGA Tour data. The goal is the rate how good the golfers are at a given moment at different facets of the game. Blog post and research paper will be forthcoming.
