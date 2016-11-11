@@ -60,8 +60,9 @@ for cat in cats:
 	    watchlist  = [(dtrain,'train'),(dtest,'eval')]
 	    bst = xgb.train(params,dtrain,num_round,watchlist,early_stopping_rounds=early_stopping_rounds,verbose_eval=False)
 	    predictions = bst.predict(dtest,ntree_limit=bst.best_iteration)
+
 	    error = np.mean((predictions-y[test])**2)
-	    print '***FOLD %d *** ERROR %g ***' % (u,error)
+	    print '***FOLD %d *** ERROR %g *** %d TREES ***' % (u,error,bst.best_iteration)
 
 	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
