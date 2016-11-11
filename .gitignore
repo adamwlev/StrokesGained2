@@ -7,3 +7,6 @@ rounds
 scala_stuff
 overall_distance_models
 *.key
+.Rhistory
+*.log
+front_end
