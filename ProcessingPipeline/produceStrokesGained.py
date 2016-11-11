@@ -14,6 +14,7 @@ data = pd.concat([pd.read_csv('./../data/%d.csv' % year)[['Cat','Shots_taken_fro
 data.insert(len(data.columns),'Year-Course',data.Year.astype(str).str.cat(data['Course_#'].astype(str),sep='-'))
 data.insert(len(data.columns),'Hole-Course',data.Hole.astype(str).str.cat(data['Course_#'].astype(str),sep='-'))
 data.insert(len(data.columns),'Round-Year-Course',data.Round.astype(str).str.cat([data.Year.astype(str),data['Course_#'].astype(str)],sep='-'))
+data = data.reset_index(drop=True)
 
 cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
 
@@ -34,9 +35,9 @@ for cat in cats[4:]:
 	#print data.index[0:5]
 	#print data_.index[0:5]
 	#break
-	print data.index
-	print data.loc[0]
-	break
+	#print data.index
+	#print data.loc[0]
+	#break
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
 	groups = le.fit_transform(groups)
