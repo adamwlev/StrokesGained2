@@ -9,7 +9,7 @@ import xgboost as xgb
 import pickle
 
 data = pd.concat([pd.read_csv('./../data/%d.csv' % year)[['Cat','Shots_taken_from_location','Started_at_Z',
-       'Distance_from_hole','Hole','Round','Course_#','Year','Green_to_work_with']] for year in range(2003,2017)])
+       'Distance_from_hole','Hole','Round','Course_#','Year','Green_to_work_with','Shot','Player_#']] for year in range(2003,2017)])
 
 data.insert(len(data.columns),'Year-Course',data.Year.astype(str).str.cat(data['Course_#'].astype(str),sep='-'))
 data.insert(len(data.columns),'Hole-Course',data.Hole.astype(str).str.cat(data['Course_#'].astype(str),sep='-'))
@@ -28,11 +28,9 @@ complexity_choices = ['with_course','with_year-course','with_hole-course','with_
 complexity_choice = {'Green':1,'Fairway':3,'Intermediate Rough':3,'Primary Rough':3,'Fringe':0,'Bunker':2,'Other':0}
 
 cols = ['Course_#','Year-Course','Hole-Course','Round-Year-Course']
+results = {}
 
-data.insert(len(data.columns),'Strokes_Gained',[0]*len(data))
-
-for cat in cats:
-	results = {}
+for cat in cats[4:5]:
 	data_ = data[data.Cat==cat]
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
@@ -67,10 +65,11 @@ for cat in cats:
 	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
-	print len(results),len(data_)
+d = data[['Year','Course_#','Player_#','Shot','Hole','Round']].values
+labels = {key:tuple(d[ind]) for ind in results.keys()}
+results = {labels[key]:value for key,value in results.iteritems()}
 
-	data.loc[data_.index,'Strokes_Gained'] = [results[i] for i in data_.index]
+with open('Difficulty_Dict.pkl', 'w') as pickleFile:
+	pickle.dump(results,pickleFile)
 
-data.to_csv('./../data/all_data.csv',index=False)
-print (data.Strokes_Gained==0.0).sum()
 
