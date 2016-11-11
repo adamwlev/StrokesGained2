@@ -1,12 +1,8 @@
 .ipynb_checkpoints
 data/**
-simplepython.tpl
 *.pyc
 *.csv
 rounds
-scala_stuff
-overall_distance_models
-*.key
 .Rhistory
 *.log
 front_end
