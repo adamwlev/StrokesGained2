@@ -1,0 +1,13 @@
+green <5 feet
+green 5-10 feet
+green 10-20 feet
+green 20+ feet
+rough <30 yards
+rough 30-125 yards
+rough 125+ yards
+fairway <100 yards
+fairway 100-180 yards
+fairway 180+ yards
+bunker play
+tee shots par threes
+tee shots par fours and fives
