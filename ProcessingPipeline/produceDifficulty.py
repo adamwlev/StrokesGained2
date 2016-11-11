@@ -30,7 +30,7 @@ complexity_choice = {'Green':1,'Fairway':3,'Intermediate Rough':3,'Primary Rough
 cols = ['Course_#','Year-Course','Hole-Course','Round-Year-Course']
 results = {}
 
-for cat in cats[4:5]:
+for cat in cats:
 	data_ = data[data.Cat==cat]
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
@@ -49,7 +49,7 @@ for cat in cats[4:5]:
 
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
-	params.update({'objective':'reg:linear','eta':.04,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
+	params.update({'objective':'reg:linear','eta':.4,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
 	early_stopping_rounds = 50
 	num_round = 100000
 	for u,(train,test) in enumerate(cv.split(X,y,groups)):
@@ -78,7 +78,7 @@ for year in range(2003,2017):
 		tee_difficulty_dict[tup] = df[df.Shot==1].Hole_Score.mean()
 	data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
 	data.loc[data.Shot==1,'Difficulty_Start'] = [tee_difficulty_dict[tuple(tup)] for tup in data[data.Shot==1][['Course_#','Hole','Round']].values.tolist()]
-	data.loc[(data.Shot!=1) & (data.Cat=='Fringe'),'Difficulty_Start'] = [results[tuple(tup)] for tup in data[(data.Shot!=1) & (data.Cat=='Fringe')][['Year','Course_#','Player_#','Shot','Hole','Round']].values.tolist()]
+	data.loc[data.Shot!=1,'Difficulty_Start'] = [results[tuple(tup)] for tup in data[data.Shot!=1][['Year','Course_#','Player_#','Shot','Hole','Round']].values.tolist()]
 	data.to_csv('./../data/%d.csv' % year,index=False)
 
 
