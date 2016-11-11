@@ -69,7 +69,14 @@ d = data[['Year','Course_#','Player_#','Shot','Hole','Round']].values
 labels = {ind:tuple(d[ind]) for ind in results.keys()}
 results = {labels[key]:value for key,value in results.iteritems()}
 
-with open('Difficulty_Dict.pkl', 'w') as pickleFile:
-	pickle.dump(results,pickleFile)
+for year in range(2003,2017):
+	data = pd.read_csv('./../data/%d.csv' % year)
+	tee_difficulty_dict = {}
+	for tup,df in data.groupby(['Course_#','Hole','Round']):
+		tee_difficulty_dict[tup] = df[df.Shot==1].Hole_Score.mean()
+	data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
+	data.loc[data.Shot==1,'Difficulty_Start'] = [tee_difficulty_dict[tuple(tup)] for tup in data[data.Shot==1][['Course_#','Hole','Round']].values.tolist()]
+	data.loc[data.Shot!=1,'Difficulty_Start'] = [results[tuple(tup)] for tup in data[data.Shot!=1][['Year','Course_#','Player_#','Shot','Hole','Round']].values.tolist()]
+	data.to_csv('./../data/%d.csv' % year,index=False)
 
 
