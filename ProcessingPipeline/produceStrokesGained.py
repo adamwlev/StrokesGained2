@@ -29,7 +29,9 @@ complexity_choice = {'Green':1,'Fairway':3,'Intermediate Rough':3,'Primary Rough
 
 cols = ['Course_#','Year-Course','Hole-Course','Round-Year-Course']
 
-for cat in cats[4:]:
+data.insert(len(data.columns),'Strokes_Gained',[0]*len(data))
+
+for cat in cats:
 	results = {}
 	data_ = data[data.Cat==cat]
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
@@ -49,7 +51,7 @@ for cat in cats[4:]:
 
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
-	params.update({'objective':'reg:linear','eta':.05,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
+	params.update({'objective':'reg:linear','eta':.04,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
 	early_stopping_rounds = 50
 	num_round = 100000
 	for u,(train,test) in enumerate(cv.split(X,y,groups)):
@@ -61,8 +63,13 @@ for cat in cats[4:]:
 	    error = np.mean((predictions-y[test])**2)
 	    print '***FOLD %d *** ERROR %g ***' % (u,error)
 
-	    assert np.all(y[test]==data.loc[data_.index.values[test]]['Shots_taken_from_location'].values)
+	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
 	print len(results),len(data_)
+
+	data.loc[data_.index,'Strokes_Gained'] = [results[i] for i in data_.index]
+
+data.to_csv('./../data/all_data.csv',index=False)
+print (data.Strokes_Gained==0.0).sum()
 
