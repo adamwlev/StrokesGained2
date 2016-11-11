@@ -66,7 +66,7 @@ for cat in cats[4:5]:
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
 d = data[['Year','Course_#','Player_#','Shot','Hole','Round']].values
-labels = {key:tuple(d[ind]) for ind in results.keys()}
+labels = {ind:tuple(d[ind]) for ind in results.keys()}
 results = {labels[key]:value for key,value in results.iteritems()}
 
 with open('Difficulty_Dict.pkl', 'w') as pickleFile:
