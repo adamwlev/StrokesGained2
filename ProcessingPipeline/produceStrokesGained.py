@@ -64,8 +64,8 @@ for cat in cats[4:]:
 	    print '***FOLD %d *** ERROR %g ***' % (u,error)
 
 	    print y[test][0:10]
-	    print data.loc[data_.index[test].values]['Shots_taken_from_location'].values[0:10]
-	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
+	    print data.loc[data_.index.values[test]]['Shots_taken_from_location'].values[0:10]
+	    assert np.all(y[test]==data.loc[data_.index.values[test]]['Shots_taken_from_location'].values[0:10])
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
 	print len(results),len(data_)
