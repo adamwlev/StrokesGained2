@@ -49,6 +49,9 @@ for cat in cats[4:]:
 	X = bmat([[X,X_]],format='csr')
 	y = data_.Shots_taken_from_location.values
 
+	print y[0:10],data[data_.index].Shots_taken_from_location.values[0:10]
+	assert np.all(y==data[data_.index].Shots_taken_from_location.values)
+
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
 	params.update({'objective':'reg:linear','eta':.05,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
