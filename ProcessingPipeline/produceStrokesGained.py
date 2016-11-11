@@ -60,7 +60,7 @@ for cat in cats[4:]:
 	    error = np.mean((predictions-y[test])**2)
 	    print '***FOLD %d *** ERROR %g ***' % (u,error)
 
-	    assert np.all(y[test]==data.iloc[data_.index[test]]['Shots_taken_from_location'].values)
+	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
 	print len(results),len(data_)
