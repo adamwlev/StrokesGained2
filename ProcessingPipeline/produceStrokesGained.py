@@ -34,6 +34,9 @@ for cat in cats[4:]:
 	#print data.index[0:5]
 	#print data_.index[0:5]
 	#break
+	print data.index
+	print data.loc[0]
+	break
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
 	groups = le.fit_transform(groups)
