@@ -32,12 +32,6 @@ cols = ['Course_#','Year-Course','Hole-Course','Round-Year-Course']
 for cat in cats[4:]:
 	results = {}
 	data_ = data[data.Cat==cat]
-	#print data.index[0:5]
-	#print data_.index[0:5]
-	#break
-	#print data.index
-	#print data.loc[0]
-	#break
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
 	groups = le.fit_transform(groups)
@@ -53,9 +47,6 @@ for cat in cats[4:]:
 	X = bmat([[X,X_]],format='csr')
 	y = data_.Shots_taken_from_location.values
 
-	print y[0:10],data.loc[data_.index].Shots_taken_from_location.values[0:10]
-	assert np.all(y==data.loc[data_.index].Shots_taken_from_location.values)
-
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
 	params.update({'objective':'reg:linear','eta':.05,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
@@ -70,9 +61,7 @@ for cat in cats[4:]:
 	    error = np.mean((predictions-y[test])**2)
 	    print '***FOLD %d *** ERROR %g ***' % (u,error)
 
-	    print y[test][0:10]
-	    print data.loc[data_.index.values[test]]['Shots_taken_from_location'].values[0:10]
-	    assert np.all(y[test]==data.loc[data_.index.values[test]]['Shots_taken_from_location'].values[0:10])
+	    assert np.all(y[test]==data.loc[data_.index.values[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
 
 	print len(results),len(data_)
