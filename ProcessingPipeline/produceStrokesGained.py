@@ -11,4 +11,4 @@ for year in range(2003,2017):
 		for j in range(1,i+1):
 			data.loc[(data.Hole_Score==i) & (data.Shot==j),'Strokes_Gained'] = data.loc[(data.Hole_Score==1) & (data.Shot==j),'Difficulty_Start'] - \
 																			   data.loc[(data.Hole_Score==1) & (data.Shot==j+1),'Difficulty_Start'] - 1
-	data.to_csv('./../data/%d.csv',index=False)
+	data.to_csv('./../data/%d.csv' % year,index=False)
