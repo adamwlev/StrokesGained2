@@ -49,7 +49,7 @@ for cat in cats:
 
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
-	params.update({'objective':'reg:linear','eta':.4,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
+	params.update({'objective':'reg:linear','eta':.04,'silent':1,'tree_method':'approx','max_depth':int(params['max_depth'])})
 	early_stopping_rounds = 50
 	num_round = 100000
 	for u,(train,test) in enumerate(cv.split(X,y,groups)):
