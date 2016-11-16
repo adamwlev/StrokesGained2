@@ -5,17 +5,16 @@ import copy
 from collections import defaultdict
 from scipy.stats import norm,gaussian_kde,spearmanr
 
-cols = ['Distance_from_hole','Cat','Par_Value','Year','Course_#','Round','Player_#','Strokes_Gained']
+cols = ['Distance_from_hole','Cat','Par_Value','Year','Course_#','Round','Player_#','Strokes_Gained','Permanent_Tournament_#']
 data = pd.concat([pd.read_csv('./../data/%d.csv' % year)[cols] for year in range(2003,2017)])
 rdata = pd.read_csv('./../data/round.csv')
 
-with open('./../PickleFiles/hole_tups.pkl','r') as pickleFile:
-    tournorder = pickle.load(pickleFile)
+with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
+    tourn_order = pickle.load(pickleFile)
 
-df = pd.DataFrame(tournorder)
-df.columns = ['Year','Permanent_Tournament_#','Round','Course_#','Hole']
-round_tups = df[['Year','Course_#','Round']].drop_duplicates().values.tolist()
-round_tups = [tuple(tup) for tup in round_tups]
+with open('./../PickleFiles/course_order.pkl','r') as pickleFile:
+    course_order = pickle.load(pickleFile)
+
 
 def make_specific_cats(distance,cat,par):
     if cat=='Tee Box':
@@ -55,25 +54,25 @@ data.insert(len(data.columns),'Specific_Cat',
 
 course_profiles = defaultdict(lambda: defaultdict(list))
 cats = pd.unique(data.Specific_Cat)
-for year,course,round in round_tups:
-    day = data[(data.Year==year) & (data['Course_#']==course) & (data.Round==round)]
-    rday = rdata[(rdata.Tournament_Year==year) & (rdata['Course_#']==course) & (rdata.Round_Number==round)]
-    if len(rday)==0 or len(day)==0:
-        continue
-    players = pd.unique(day['Player_#'])
-    cat_aves = {}
-    for cat in cats:
-    	df = day[day.Specific_Cat==cat]
-    	if len(df)==0:
-    	    cat_aves[cat] = [0.0]*len(players)
-        player_map = df.groupby('Player_#').Strokes_Gained.mean().to_dict()
-        cat_aves[cat] = np.array([player_map[player] if player in player_map else 0.0 for player in players])
-    ave_score = rday.groupby('Player_Number').Round_Score.mean().mean()
-    score_map = rday.groupby('Player_Number').Round_Score.mean().to_dict()
-    score_vec = np.array([score_map[player]-ave_score if player in score_map else np.nan for player in players])
-    for cat in cat_aves:
-        cat_aves[cat] = cat_aves[cat][~np.isnan(score_vec)]
-        course_profiles[course][cat].append(spearmanr(score_vec[~np.isnan(score_vec)],cat_aves[cat])[0])
+for year,tourn in tourn_order:
+    for (course,round),day in data[(data.Year==year) & (data['Permanent_Tournament_#']==tourn)].groupby(['Course_#','Round']):
+        rday = rdata[(rdata.Tournament_Year==year) & (rdata['Course_#']==course) & (rdata.Round_Number==round)]
+        if len(rday)==0 or len(day)==0:
+            continue
+        players = pd.unique(day['Player_#'])
+        cat_aves = {}
+        for cat in cats:
+            df = day[day.Specific_Cat==cat]
+            if len(df)==0:
+                cat_aves[cat] = [0.0]*len(players)
+            player_map = df.groupby('Player_#').Strokes_Gained.mean().to_dict()
+            cat_aves[cat] = np.array([player_map[player] if player in player_map else 0.0 for player in players])
+        ave_score = rday.groupby('Player_Number').Round_Score.mean().mean()
+        score_map = rday.groupby('Player_Number').Round_Score.mean().to_dict()
+        score_vec = np.array([score_map[player]-ave_score if player in score_map else np.nan for player in players])
+        for cat in cats:
+            cat_aves[cat] = cat_aves[cat][~np.isnan(score_vec)]
+            course_profiles[course][cat].append(spearmanr(score_vec[~np.isnan(score_vec)],cat_aves[cat])[0])
 
 priors = defaultdict(None)
 for cat in cats:
@@ -96,26 +95,35 @@ def update(x,p_x,r,n):
     p_x /= p_x.sum()
     return p_x
 
-course_posteriors = {course:copy.deepcopy(priors) for course in pd.unique(data['Course_#'])}
-for year,course,round in round_tups:
-    day = data[(data.Year==year) & (data['Course_#']==course) & (data.Round==round)]
-    rday = rdata[(rdata.Tournament_Year==year) & (rdata['Course_#']==course) & (rdata.Round_Number==round)]
-    if len(rday)==0 or len(day)==0:
-        continue
-    players = pd.unique(day['Player_#'])
-    cat_aves = {}
+course_posteriors = {course:copy.deepcopy(priors) for course in course_order}
+to_return = {cat:np.zeros((len(tourn_order),len(course_order))) for cat in cats}
+for u,(year,tourn) in enumerate(tourn_order):
     for cat in cats:
-    	df = day[day.Specific_Cat==cat]
-    	if len(df)==0:
-    	    cat_aves[cat] = [0.0]*len(players)
-        player_map = df.groupby('Player_#').Strokes_Gained.mean().to_dict()
-        cat_aves[cat] = np.array([player_map[player] if player in player_map else 0.0 for player in players])
-    ave_score = rday.groupby('Player_Number').Round_Score.mean().mean()
-    score_map = rday.groupby('Player_Number').Round_Score.mean().to_dict()
-    score_vec = np.array([score_map[player]-ave_score if player in score_map else np.nan for player in players])
-    for cat in cats:
-        cat_aves[cat] = cat_aves[cat][~np.isnan(score_vec)]
-        course_posteriors[course][cat][1] = update(course_posteriors[course][cat][0],
-                                                   course_posteriors[course][cat][1],
-                                                   spearmanr(score_vec[~np.isnan(score_vec)],cat_aves[cat])[0],
-                                                   cat_aves[cat].shape[0])      
+        to_return[cat][u,:] = np.array([np.dot(course_posteriors[course][cat][0],course_posteriors[course][cat][1])
+                                        for course in course_order])
+    for (course,round),day in data[(data.Year==year) & (data['Permanent_Tournament_#']==tourn)].groupby(['Course_#','Round']):
+        rday = rdata[(rdata.Tournament_Year==year) & (rdata['Course_#']==course) & (rdata.Round_Number==round)]
+        if len(rday)==0 or len(day)==0:
+            continue
+        players = pd.unique(day['Player_#'])
+        cat_aves = {}
+        for cat in cats:
+            df = day[day.Specific_Cat==cat]
+            if len(df)==0:
+                cat_aves[cat] = [0.0]*len(players)
+            player_map = df.groupby('Player_#').Strokes_Gained.mean().to_dict()
+            cat_aves[cat] = np.array([player_map[player] if player in player_map else 0.0 for player in players])
+        ave_score = rday.groupby('Player_Number').Round_Score.mean().mean()
+        score_map = rday.groupby('Player_Number').Round_Score.mean().to_dict()
+        score_vec = np.array([score_map[player]-ave_score if player in score_map else np.nan for player in players])
+        for cat in cats:
+            cat_aves[cat] = cat_aves[cat][~np.isnan(score_vec)]
+            if np.isnan(spearmanr(score_vec[~np.isnan(score_vec)],cat_aves[cat])[0]):
+            	continue
+            course_posteriors[course][cat][1] = update(course_posteriors[course][cat][0],
+                                                       course_posteriors[course][cat][1],
+                                                       spearmanr(score_vec[~np.isnan(score_vec)],cat_aves[cat])[0],
+                                                       cat_aves[cat].shape[0])
+
+def return_matrix():
+	return to_return
