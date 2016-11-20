@@ -124,10 +124,12 @@ if __name__=='__main__':
         mat.data[np.isnan(mat.data)] = 0
         mat_1.data[np.isnan(mat_1.data)] = 0
         
-        S = eye(mat.shape[0],format='csc')-alpha(mat,a)*mat
+        alpha_ = alpha(mat,a)
+
+        S = eye(mat.shape[0],format='csc')-alpha_*mat
         w_a = gmres(S,mat.sum(1),x0=x_guess)[0]
         
-        S = eye(mat_1.shape[0],format='csc')-alpha(mat_1,a)*mat_1 
+        S = eye(mat_1.shape[0],format='csc')-alpha_*mat_1 
         w_g = gmres(S,mat_1.sum(1),x0=x_guess1)[0]
         
         solve.w_a = w_a

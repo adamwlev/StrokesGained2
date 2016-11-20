@@ -4,7 +4,6 @@ from scipy.sparse import csr_matrix,bmat
 
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 from sklearn.model_selection import GroupKFold
-from sklearn.utils import shuffle
 
 import xgboost as xgb
 import pickle
@@ -47,7 +46,6 @@ for cat in cats:
 	X_ = bmat([[lb.fit_transform(data_[col].values.astype(str)) for col in cols[:complexity_choice[cat]+1]]],format='csr')
 	X = bmat([[X,X_]],format='csr')
 	y = data_.Shots_taken_from_location.values
-	X,y = shuffle(X,y)
 
 	cv = GroupKFold(n_splits=n_folds)
 	params = hyperparams[cat][complexity_choices[complexity_choice[cat]]]['max_params']
@@ -62,7 +60,7 @@ for cat in cats:
 	    predictions = bst.predict(dtest,ntree_limit=bst.best_iteration)
 
 	    error = np.mean((predictions-y[test])**2)
-	    print '***FOLD %d *** ERROR %g *** %d TREES ***' % (u,error,bst.best_iteration)
+	    print '*** FOLD %d *** ERROR %g *** %d TREES ***' % (u,error,bst.best_iteration)
 
 	    assert np.all(y[test]==data.loc[data_.index[test]]['Shots_taken_from_location'].values)
 	    results.update({ind:pred for ind,pred in zip(data_.index[test],predictions)})
