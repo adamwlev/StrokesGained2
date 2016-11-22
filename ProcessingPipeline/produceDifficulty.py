@@ -20,7 +20,7 @@ cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker'
 
 n_folds = 15
 
-with open('./../Modeling/xgboost_results.pkl','r') as pickleFile:
+with open('./../PickleFiles/xgboost_results.pkl','r') as pickleFile:
     hyperparams = pickle.load(pickleFile)
 
 complexity_choices = ['with_course','with_year-course','with_hole-course','with_round-year-course']
