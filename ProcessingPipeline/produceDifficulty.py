@@ -35,6 +35,9 @@ for cat in cats:
 	groups = ['-'.join(map(str,tup)) for tup in data_[['Hole','Round','Course_#','Year']].values.tolist()]
 	le = LabelEncoder()
 	groups = le.fit_transform(groups)
+    groups_dict = {group:u for u,group in enumerate(set(groups))}
+    perm = np.random.permutation(len(groups_dict))
+    groups = [perm[groups_dict[group]] for group in groups]
 
 	if cat=='Green':
 		X = data_[['Started_at_Z','Distance_from_hole']].values.astype(float)
