@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from scipy.sparse import csr_matrix,bmat
+from scipy.sparse import csc_matrix,bmat
 
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 from sklearn.model_selection import GroupKFold
@@ -45,9 +45,9 @@ for cat in cats:
         X = data_[['Started_at_Z','Distance_from_hole','Green_to_work_with']].values.astype(float)
 
     lb = LabelBinarizer(sparse_output=True)
-    X = csr_matrix(X)
-    X_ = bmat([[lb.fit_transform(data_[col].values.astype(str)) for col in cols[:complexity_choice[cat]+1]]],format='csr')
-    X = bmat([[X,X_]],format='csr')
+    X = csc_matrix(X)
+    X_ = bmat([[lb.fit_transform(data_[col].values.astype(str)) for col in cols[:complexity_choice[cat]+1]]],format='csc')
+    X = bmat([[X,X_]],format='csc')
     y = data_.Shots_taken_from_location.values
 
     cv = GroupKFold(n_splits=n_folds)
