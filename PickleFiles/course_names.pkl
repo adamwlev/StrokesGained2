@@ -1,0 +1,323 @@
+(dp0
+I512
+S'TPC Avenel'
+p1
+sI513
+S'TPC Southwind'
+p2
+sI2
+S'Indian Wells CC'
+p3
+sI4
+S'Torrey Pines GC (South)'
+p4
+sI5
+S'Pebble Beach GL'
+p5
+sI6
+S'Waialae CC'
+p6
+sI8
+S'Trump National Doral'
+p7
+sI9
+S'Bay Hill Club & Lodge'
+p8
+sI11
+S'TPC Sawgrass'
+p9
+sI12
+S'Harbour Town GL'
+p10
+sI13
+S'Forest Oaks CC'
+p11
+sI526
+S'Cog Hill G&CC'
+p12
+sI527
+S'Crooked Stick GC'
+p13
+sI530
+S'Poppy Hills'
+p14
+sI19
+S'TPC Four Seasons Resort'
+p15
+sI21
+S'Colonial CC'
+p16
+sI534
+S'Bellerive CC'
+p17
+sI23
+S'Muirfield Village GC'
+p18
+sI24
+S'Congressional CC (Blue)'
+p19
+sI538
+S'TPC Summerlin'
+p20
+sI27
+S'Westchester CC'
+p21
+sI32
+S'Glen Abbey GC'
+p22
+sI35
+S'Warwick Hills G&CC'
+p23
+sI36
+S'Firestone CC (South)'
+p24
+sI37
+S'En-Joie GC'
+p25
+sI552
+S'Silverado CC (North)'
+p26
+sI45
+S'Magnolia GC'
+p27
+sI56
+S'Castle Pines GC'
+p28
+sI616
+S'Robert Trent Jones GC'
+p29
+sI101
+S'Tucson National GC'
+p30
+sI609
+S'Annandale GC'
+p31
+sI612
+S'Brown Deer Park GC'
+p32
+sI613
+S'Cottonwood Valley GC'
+p33
+sI102
+S'Bermuda Dunes CC'
+p34
+sI104
+S'Torrey Pines (North)'
+p35
+sI625
+S'LaCantera GC (Resort)'
+p36
+sI638
+S'TPC Sugarloaf'
+p37
+sI642
+S'Royal Montreal GC (Blue)'
+p38
+sI643
+S'Champions GC'
+p39
+sI649
+S'PGA West (Palmer)'
+p40
+sI656
+S'Plantation Course at Kapalua'
+p41
+sI145
+S'Palm GC'
+p42
+sI660
+S'Montreux G&CC'
+p43
+sI665
+S'Innisbrook Resort (Copperhead)'
+p44
+sI669
+S'TPC Deere Run'
+p45
+sI670
+S'Southern Highlands GC'
+p46
+sI671
+S'Valhalla GC'
+p47
+sI681
+S'TPC Canyons'
+p48
+sI687
+S'Mount Juliet'
+p49
+sI688
+S'East Lake GC'
+p50
+sI689
+S'Bethpage State Park (Black)'
+p51
+sI690
+S'Hazeltine National GC'
+p52
+sI692
+S'CC at Mirasol (Sunset)'
+p53
+sI694
+S'Hamilton G&CC'
+p54
+sI695
+S'Capital City Club (Crabapple)'
+p55
+sI696
+S'Nemacolin (Mystic Rock)'
+p56
+sI185
+S'Austin Country Club'
+p57
+sI698
+S'Quail Hollow Club'
+p58
+sI699
+S'Redstone GC (Fall Creek)'
+p59
+sI700
+S'TPC Boston'
+p60
+sI202
+S'La Quinta CC'
+p61
+sI704
+S'PGA WEST TPC Stadium Course'
+p62
+sI706
+S'Whistling Straits'
+p63
+sI710
+S'CC at Mirasol (Sunset)'
+p64
+sI712
+S"Bear's Best"
+p65
+sI713
+S'Grayhawk GC (Raptor)'
+p66
+sI714
+S'TPC Louisiana'
+p67
+sI715
+S'Baltusrol GC'
+p68
+sI716
+S'Shaughnessy G&CC'
+p69
+sI205
+S'Spyglass Hill GC'
+p70
+sI717
+S'TPC Harding Park'
+p71
+sI723
+S'The Classic Club'
+p72
+sI726
+S'The Grove'
+p73
+sI729
+S'GC of Houston'
+p74
+sI730
+S'Atunyote GC'
+p75
+sI733
+S'El Camaleon GC'
+p76
+sI734
+S'PGA National (Champion)'
+p77
+sI736
+S'Angus Glen GC (North)'
+p78
+sI740
+S'Tesoro Club'
+p79
+sI741
+S'Silver Rock'
+p80
+sI742
+S'Coco Beach Golf & CC'
+p81
+sI231
+S'Sea Island Resort (Plantation)'
+p82
+sI745
+S'Ridgewood CC'
+p83
+sI746
+S'CC of Jackson'
+p84
+sI751
+S'Hammock Beach (Conservatory)'
+p85
+sI752
+S'Sedgefield CC'
+p86
+sI762
+S'Liberty National GC'
+p87
+sI763
+S'PGA West (Nicklaus)'
+p88
+sI769
+S'Monterey Peninsula CC'
+p89
+sI770
+S'TPC San Antonio - AT&T Oaks'
+p90
+sI771
+S'The Old White TPC'
+p91
+sI772
+S"St. George's G&CC"
+p92
+sI773
+S'Aronimink GC'
+p93
+sI775
+S'CordeValle GC'
+p94
+sI776
+S'Sea Island Resort (Seaside)'
+p95
+sI780
+S'Atlanta Athletic Club'
+p96
+sI781
+S'Plainfield CC'
+p97
+sI789
+S'Conway Farms GC'
+p98
+sI302
+S'Tamarisk CC'
+p99
+sI819
+S'RTJ Trail (Grand National)'
+p100
+sI822
+S'TPC Four Seasons Resort'
+p101
+sI233
+S'PGA West (Tournament)'
+p102
+sI500
+S'Riviera CC'
+p103
+sI503
+S'TPC River Highlands'
+p104
+sI505
+S'Cherry Hills CC'
+p105
+sI510
+S'TPC Scottsdale'
+p106
+sI511
+S'English Turn G&CC'
+p107
+s.
