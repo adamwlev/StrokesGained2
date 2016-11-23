@@ -1,0 +1,164 @@
+(dp0
+I1
+S'Chrysler Classic of Tucson'
+p1
+sI2
+S'CareerBuilder Challenge in partnership with the Clinton Foundation'
+p2
+sI3
+S'Waste Management Phoenix Open'
+p3
+sI4
+S'Farmers Insurance Open'
+p4
+sI5
+S'AT&T Pebble Beach Pro-Am'
+p5
+sI6
+S'Sony Open in Hawaii'
+p6
+sI7
+S'Northern Trust Open'
+p7
+sI8
+S'Ford Championship at Doral'
+p8
+sI9
+S'Arnold Palmer Invitational presented by MasterCard'
+p9
+sI10
+S'The Honda Classic'
+p10
+sI11
+S'THE PLAYERS Championship'
+p11
+sI12
+S'RBC Heritage'
+p12
+sI13
+S'Wyndham Championship'
+p13
+sI16
+S'Hyundai Tournament of Champions'
+p14
+sI18
+S'Zurich Classic of New Orleans'
+p15
+sI19
+S'AT&T Byron Nelson'
+p16
+sI20
+S'Shell Houston Open'
+p17
+sI21
+S'DEAN & DELUCA Invitational'
+p18
+sI22
+S'AT&T Classic'
+p19
+sI23
+S'the Memorial Tournament presented by Nationwide'
+p20
+sI24
+S'Booz Allen Classic'
+p21
+sI25
+S'FedEx St. Jude Classic'
+p22
+sI27
+S'The Barclays'
+p23
+sI28
+S'BMW Championship'
+p24
+sI29
+S'U.S. Bank Championship in Milwaukee'
+p25
+sI30
+S'John Deere Classic'
+p26
+sI32
+S'RBC Canadian Open'
+p27
+sI33
+S'PGA Championship'
+p28
+sI34
+S'Travelers Championship'
+p29
+sI35
+S'Buick Open'
+p30
+sI37
+S'B.C. Open presented by Turning Stone Resort'
+p31
+sI41
+S'Valero Texas Open'
+p32
+sI45
+S"Children's Miracle Network Hospitals Classic"
+p33
+sI47
+S'Shriners Hospitals for Children Open'
+p34
+sI54
+S'Sanderson Farms Championship'
+p35
+sI56
+S'The INTERNATIONAL'
+p36
+sI60
+S'TOUR Championship'
+p37
+sI457
+S'OHL Classic at Mayakoba'
+p38
+sI518
+S'Barbasol Championship'
+p39
+sI464
+S'Frys.com Open'
+p40
+sI470
+S'World Golf Championships-Dell Match Play'
+p41
+sI471
+S'Quicken Loans National'
+p42
+sI472
+S'Reno-Tahoe Open'
+p43
+sI473
+S'World Golf Championships-Cadillac Championship'
+p44
+sI474
+S'84 LUMBER Classic'
+p45
+sI475
+S'Valspar Championship'
+p46
+sI476
+S'World Golf Championships-Bridgestone Invitational'
+p47
+sI480
+S'Wells Fargo Championship'
+p48
+sI481
+S'Turning Stone Resort Championship'
+p49
+sI482
+S'Ginn sur Mer Classic'
+p50
+sI483
+S'Puerto Rico Open at Coco Beach'
+p51
+sI490
+S'The Greenbrier Classic'
+p52
+sI493
+S'The RSM Classic'
+p53
+sI505
+S'Deutsche Bank Championship'
+p54
+s.
