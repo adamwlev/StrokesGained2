@@ -1,6 +1,7 @@
 def return_mats(beta):
 	from scipy.sparse import bmat
 	from scipy.stats import norm
+	import numpy as np
 
 	def load_sparse_csc(filename):
 	    loader = np.load(filename)
