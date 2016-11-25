@@ -1,5 +1,5 @@
 def return_mats(beta):
-	from scipy.sparse import bmat
+	from scipy.sparse import bmat,csc_matrix
 	from scipy.stats import norm
 	import numpy as np
 
