@@ -1,4 +1,4 @@
-def return_mats(beta):
+def return_mats(BETA):
 	from scipy.sparse import bmat,csc_matrix
 	from scipy.stats import norm
 	import numpy as np
