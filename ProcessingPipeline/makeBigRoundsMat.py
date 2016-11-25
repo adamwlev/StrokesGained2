@@ -12,6 +12,7 @@ def return_mats(BETA):
 	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
 	data = pd.read_csv('./../data/round.csv')
+	data = data.loc[data['Permanent_Tournament_#']!=470] ## this is the match play championship, no round scores available
 	tups = data.drop_duplicates(['Tournament_Year','Permanent_Tournament_#'])[['Tournament_Year','Permanent_Tournament_#']].values.tolist()
 	tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
 	data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Tournament_Year','Permanent_Tournament_#']].values.tolist()])
