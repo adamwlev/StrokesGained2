@@ -116,10 +116,11 @@ if __name__=='__main__':
     data = data[['Cat','Year','Round','Permanent_Tournament_','Course_','Hole','Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index','Par_Value']]
     gc.collect()
     
-    tournament_groups = {tup:u/4 for u,tup in enumerate(tourn_order)}
-    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values.tolist()])
+    data = pd.concat([data[(data[data.Year==year]) & (data['Permanent_Tournament_']==tourn)] for year,tourn in tourn_order])
+    tups = data.drop_duplicates(['Tournament_Year','Permanent_Tournament_#'])[['Tournament_Year','Permanent_Tournament_#']].values.tolist()
+    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
+    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Tournament_Year','Permanent_Tournament_#']].values.tolist()])
     n_tournament_groups = len(pd.unique(data.Tournament_Group))
-    window_size = 28
 
     num_cores = 8
     slices = partition(range(n_tournament_groups),num_cores)
