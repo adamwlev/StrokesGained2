@@ -23,7 +23,7 @@ if __name__=="__main__":
 		else:
 			n_files = len(commands.getstatusoutput('find ./../cats/cats_w%s-%s-%s-%s -type f' % (eps_,e_d_,e_t_,w_d_))[1].split('\n'))
 			print n_files
-			if n_files!=3836:
+			if n_files!=3864:
 				print 'Running SaveShotsBlocks %s-%s-%s-%s' % (eps_,e_d_,e_t_,w_d_)
 				subprocess.call(["python","SaveShotsBlocks.py","%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_])
 		for cat in cats:
