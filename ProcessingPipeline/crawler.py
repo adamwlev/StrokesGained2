@@ -39,7 +39,7 @@ if __name__=="__main__":
 				print 'Running SaveShotsBlocks %s-%s-%s-%s' % (eps_,e_d_,e_t_,w_d_)
 				subprocess.call(["python","SaveShotsBlocks.py","%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_])
 		
-		num_cores = 3
+		num_cores = 7
 		slices = partition(cats,num_cores)
 		pool = multiprocessing.Pool(num_cores)
 		results = pool.map(run_a_slice, slices)
