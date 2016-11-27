@@ -19,11 +19,11 @@ def return_mats(BETA):
 	n_tournament_groups = len(pd.unique(data.Tournament_Group))
 
 	A = bmat([[bmat([[load_sparse_csc('./../rounds/%dA.npz' % i)*my_norm(i-k,BETA)] 
-                 for k in range(0,n_tournament_groups)],format='csc') 
-              for i in range(0,n_tournament_groups)]],format='csc')
+                 for k in range(n_tournament_groups)],format='csc') 
+              for i in range(n_tournament_groups)]],format='csc')
 
 	G = bmat([[bmat([[load_sparse_csc('./../rounds/%dG.npz' % i)*my_norm(i-k,BETA)] 
-                 for k in range(0,n_tournament_groups)],format='csc') 
-              for i in range(0,n_tournament_groups)]],format='csc')
+                 for k in range(n_tournament_groups)],format='csc') 
+              for i in range(n_tournament_groups)]],format='csc')
 
 	return (A,G)
