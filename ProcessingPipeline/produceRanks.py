@@ -55,8 +55,12 @@ if __name__=="__main__":
     a,beta = tuple(map(float,[a,beta]))
     print cat
     ranks,reps = [],[]
-    A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
-    G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
+    A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] 
+                    for i in range(n_tournament_groups)],format='csc') 
+               for group in range(n_tournament_groups)]],format='csc')
+    G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] 
+                    for i in range(n_tournament_groups)],format='csc') 
+               for group in range(n_tournament_groups)]],format='csc')
     window_size = 28
     for tournament_group in range(n_tournament_groups):
         min_ = max(0,tournament_group-window_size+1)*n_players
