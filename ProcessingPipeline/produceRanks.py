@@ -49,7 +49,7 @@ if __name__=="__main__":
 		tourn_order = pickle.load(pickleFile)
 	
 	n_players = len(num_to_ind)
-	data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#'])
+	data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
 	n_players = len(num_to_ind)
 
 	window_size = 28
