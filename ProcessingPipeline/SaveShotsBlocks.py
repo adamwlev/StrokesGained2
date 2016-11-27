@@ -117,9 +117,9 @@ if __name__=='__main__':
     gc.collect()
     
     data = pd.concat([data[(data.Year==year) & (data.Permanent_Tournament_==tourn)] for year,tourn in tourn_order])
-    tups = data.drop_duplicates(['Tournament_Year','Permanent_Tournament_'])[['Tournament_Year','Permanent_Tournament_']].values.tolist()
+    tups = data.drop_duplicates(['Year','Permanent_Tournament_'])[['Year','Permanent_Tournament_']].values.tolist()
     tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
-    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Tournament_Year','Permanent_Tournament_']].values.tolist()])
+    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values.tolist()])
     n_tournament_groups = len(pd.unique(data.Tournament_Group))
 
     num_cores = 8
