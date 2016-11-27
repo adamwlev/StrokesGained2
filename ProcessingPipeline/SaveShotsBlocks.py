@@ -75,7 +75,7 @@ if __name__=='__main__':
 
         for tournament_group in slice:
             for big_cat in meta_cats:
-                if os.path.exists('./../cats/cats_w%g-%g-%g-%g/%s_%d.npz' % (epsilon*100,e_d,e_t,w_d,big_cat,group)):
+                if os.path.exists('./../cats/cats_w%g-%g-%g-%g/%s_%d.npz' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group)):
                     continue
                 mat,mat1 = None,None
                 for small_cat in meta_cats[big_cat]:
