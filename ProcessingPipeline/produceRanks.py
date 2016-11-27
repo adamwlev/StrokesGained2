@@ -48,7 +48,7 @@ if __name__=="__main__":
     with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
         tourn_order = pickle.load(pickleFile)
     
-    n_players = len(num_to_ind)
+    data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
     n_players = len(num_to_ind)
 
