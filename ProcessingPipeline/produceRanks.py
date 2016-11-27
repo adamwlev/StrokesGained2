@@ -10,151 +10,79 @@ import multiprocessing
 import gc
 import os,sys
 
-if __name__=='__main__':
-    with open('./../num_to_ind.pkl','r') as pickleFile:
-        num_to_ind = pickle.load(pickleFile)
+if __name__=="__main__":
+	def my_norm(x,BETA):
+	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
-    with open('./../hole_tups.pkl','r') as pickleFile:
-        hole_tups = pickle.load(pickleFile)
+	def alpha(A,a):
+	    A.data[A.data<1e-6] = 0
+	    A.data[np.isnan(A.data)]=0
+	    w,v = eigs(A,k=1,which='LM')
+	    return a/w[0].real
 
-    cats = {}
-    cats['tee3'] = ['tee3']
-    cats['tee45'] = ['tee45']
-    cats['green0'] = ['green0','fringe0']
-    cats['green5'] = ['green5','fringe5']
-    cats['green10'] = ['green10','fringe10']
-    cats['green20'] = ['green20','fringe20']
-    cats['rough0'] = ['prough0','irough0']
-    cats['rough90'] = ['prough90','irough90']
-    cats['rough375'] = ['prough375','irough375']
-    cats['fairway0'] = ['fairway0']
-    cats['fairway300'] = ['fairway300']
-    cats['fairway540'] = ['fairway540']
-    cats['bunker'] = ['bunker']
-    cats['other'] = ['other']
-    # cats['putting'] = ['putting']
-    # cats['tee'] = ['tee']
-    # cats['approach'] = ['approach']
-    # cats['around_green'] = ['around_green']
+	def solve(mat,mat_1,a,min_reps,x_guess=None,x_guess1=None):
+	    mat.data[mat_1.data<1e-6] = 0
+	    mat_1.data[mat_1.data<1e-6] = 0
+	    mat.data[np.isnan(mat.data)] = 0
+	    mat_1.data[np.isnan(mat_1.data)] = 0
+	    
+	    alpha_ = alpha(mat,a)
+	    S = eye(mat.shape[0],format='csc')-alpha_*mat
+	    w_a = gmres(S,mat.sum(1),x0=x_guess)[0]
+	    
+	    S = eye(mat_1.shape[0],format='csc')-alpha_*mat_1 
+	    w_g = gmres(S,mat_1.sum(1),x0=x_guess1)[0]
+	    
+	    solve.w_a = w_a
+	    solve.w_g = w_g
+	    w_a[w_g<min_reps] = 0
+	    return ((w_a/w_g)[-n_players:],w_g[-n_players:])
 
-    _,cat,epsilon,a,beta = sys.argv
-    print cat
-    epsilon,a,beta = tuple(map(float,[epsilon,a,beta]))
+	def load_sparse_csc(filename):
+	    loader = np.load(filename)
+	    return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
 
-    key = pd.read_csv('./../cats/cats%g/key_file.csv' % (epsilon,),header=None,index_col=0)
-    key_dict = {tuple(value):key for key,value in key.T.to_dict('list').iteritems()}
+	with open('./../PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
+		num_to_ind = pickle.load(pickleFile)
 
-    n_players = len(num_to_ind)
-    n_holes = len(hole_tups)
-    n_tournaments = len(pd.DataFrame(np.array(hole_tups))[[0,1]].drop_duplicates())
+	with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
+		tourn_order = pickle.load(pickleFile)
+	
+	n_players = len(num_to_ind)
+	data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#'])
+	n_players = len(num_to_ind)
 
-    def load_sparse_csc(filename):
-        loader = np.load(filename)
-        return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
+	window_size = 28
+	data = pd.concat([data[(data.Year==year) & (data.Permanent_Tournament_==tourn)] for year,tourn in tourn_order])
+    tups = data.drop_duplicates(['Year','Permanent_Tournament_'])[['Year','Permanent_Tournament_']].values.tolist()
+    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
+    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values.tolist()])
+    n_tournament_groups = len(pd.unique(data.Tournament_Group))
 
-    def run_a_slice(slice):
-        def my_norm(x,beta):
-            return norm.pdf(x,0,beta)/norm.pdf(0,0,beta)
-        def inflate(cat,tournament_group,holes_to_inflate,n_tournament_groups,beta,window_size):
-            mat = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
-            mat_1 = csc_matrix((n_players*n_tournament_groups,n_players),dtype=float)
-            for j in holes_to_inflate:
-                ind = key_dict[j]
-                for c in cats[cat]:
-                    fname = './../cats/cats%g/%s_%d.npz' % (epsilon,c,ind)
-                    if not os.path.isfile(fname):
-                        continue
-                    mat += bmat([[load_sparse_csc(fname)*my_norm(tournament_group-k,beta)] for k in range(1,n_tournament_groups+1)],format='csc')
-                    mat_1 += bmat([[(load_sparse_csc(fname)!=0).astype(float)*my_norm(tournament_group-k,beta)] for k in range(1,n_tournament_groups+1)],format='csc')
-            return {tournament_group:(mat,mat_1)}
-        d = {}
-        for group,tups in slice:
-            d.update(inflate(cat,group,tups,n_tournament_groups,beta,window_size))
-        return d
+	_,cat,epsilon,e_d,e_t,w_d,a,beta = sys.argv
+	if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
+	    os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
 
-    def partition (lst, n):
-        return [lst[i::n] for i in xrange(n)]
+	a,beta = tuple(map(float,[a,beta]))
+	print cat
+	ranks,reps = [],[]
+	A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
+	G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
+	for group in range(n_tournament_groups):
+	    min_ = max(0,group-window_size)*n_players
+	    max_ = n_players*(group+1)
+	    A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
+	    if group==0:
+	        res = solve(A_,G_,a,1)
+	        ranks.append(res[0])
+	        reps.append(res[1])
+	    else:
+	        w_a_approx = np.append(solve.w_a[0 if group<window_size else n_players:],solve.w_a[-n_players:])
+	        w_g_approx = np.append(solve.w_g[0 if group<window_size else n_players:],solve.w_g[-n_players:])
+	        res = solve(A_,G_,a,1,w_a_approx,w_g_approx)
+	        ranks.append(res[0])
+	        reps.append(res[1])
+	np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_ranks.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(ranks).T)
+	np.save('./../ranks/ranks-%s-%s-%s-%s-%g-%g/%s_reps.npy' % (epsilon,e_d,e_t,w_d,a,beta,cat), np.array(reps).T)
 
-    bin_size = 4
-    window_size = 28
-    n_tournament_groups = int(math.ceil(n_tournaments/float(bin_size)))
-    current_group = 0
-    tournament_groups = defaultdict(set)
-    tournaments = set()
-    group_to_tups = {}
-    holes_to_inflate = []
-    for tup in hole_tups:
-        tournaments.add(tuple(tup[0:2]))
-        tournament_group = (len(tournaments)-1)/bin_size
-        if tournament_group>current_group:
-            current_group = tournament_group
-            group_to_tups[current_group] = holes_to_inflate
-            holes_to_inflate = []
-        tournament_groups[current_group].add(tuple(tup[0:2]))
-        holes_to_inflate.append(tuple(tup))
-
-    num_cores = multiprocessing.cpu_count()-1
-    slices = partition(group_to_tups.items(),num_cores)
-    pool = multiprocessing.Pool(num_cores)
-    results = pool.map(run_a_slice, slices)
-    pool.close()
-    
-    results = {key:value for res in results for key,value in res.iteritems()}
-    
-    A = bmat([[results[i][0] for i in range(1,n_tournament_groups)]],format='csc')
-    for i in results:
-        results[i] = (None,results[i][1])
-    gc.collect()
-    G = bmat([[results[i][1] for i in range(1,n_tournament_groups)]],format='csc')
-    results = None
-    gc.collect()
-
-    def my_norm(x,BETA):
-        return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
-
-    def alpha(A,a):
-        A.data[A.data<1e-6] = 0
-        A.data[np.isnan(A.data)]=0
-        w,v = eigs(A,k=1,which='LM')
-        return a/w[0].real
-
-    def solve(mat,mat_1,a,min_reps,x_guess=None,x_guess1=None):
-        mat.data[mat_1.data<1e-6] = 0
-        mat_1.data[mat_1.data<1e-6] = 0
-        mat.data[np.isnan(mat.data)] = 0
-        mat_1.data[np.isnan(mat_1.data)] = 0
-        
-        alpha_ = alpha(mat,a)
-
-        S = eye(mat.shape[0],format='csc')-alpha_*mat
-        w_a = gmres(S,mat.sum(1),x0=x_guess)[0]
-        
-        S = eye(mat_1.shape[0],format='csc')-alpha_*mat_1 
-        w_g = gmres(S,mat_1.sum(1),x0=x_guess1)[0]
-        
-        solve.w_a = w_a
-        solve.w_g = w_g
-        w_a[w_g<min_reps] = 0
-        return ((w_a/w_g)[-n_players:],w_g[-n_players:])
-
-    ranks,reps = [],[]
-    for group in range(1,n_tournament_groups):
-        min_ = max(0,group-window_size)*n_players
-        max_ = group*n_players
-        A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
-        if group==1:
-            res = solve(A_,G_,a,1)
-            ranks.append(res[0])
-            reps.append(res[1])
-        else:
-            w_a_approx = np.append(solve.w_a[0 if group<=window_size else n_players:],solve.w_a[-n_players:])
-            w_g_approx = np.append(solve.w_g[0 if group<=window_size else n_players:],solve.w_g[-n_players:])
-            res = solve(A_,G_,a,1,w_a_approx,w_g_approx)
-            ranks.append(res[0])
-            reps.append(res[1])
-
-    if not os.path.exists('./../ranks/ranks-%g-%g-%g' % (epsilon,a,beta)):
-        os.makedirs('./../ranks/ranks-%g-%g-%g' % (epsilon,a,beta))
-        
-    np.save('./../ranks/ranks-%g-%g-%g/%s_ranks.npy' % (epsilon,a,beta,cat), np.array(ranks).T)
-    np.save('./../ranks/ranks-%g-%g-%g/%s_reps.npy' % (epsilon,a,beta,cat), np.array(reps).T)
+	
