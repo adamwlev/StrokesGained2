@@ -63,6 +63,7 @@ if __name__=="__main__":
                for tournament_group in range(n_tournament_groups)]],format='csc')
     window_size = 28
     for tournament_group in range(n_tournament_groups):
+        print tournament_group
         min_ = max(0,tournament_group-window_size+1)*n_players
         max_ = n_players*(tournament_group+1)
         if tournament_group==0:
