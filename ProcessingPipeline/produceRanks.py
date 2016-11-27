@@ -68,8 +68,8 @@ if __name__=="__main__":
     A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
     G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
     window_size = 28
-    for group in range(n_tournament_groups):
-        min_ = max(0,group-window_size)*n_players
+    for tournament_group in range(n_tournament_groups):
+        min_ = max(0,tournament_group-window_size+1)*n_players
         max_ = n_players*(group+1)
         A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
         if group==0:
@@ -77,8 +77,8 @@ if __name__=="__main__":
             ranks.append(res[0])
             reps.append(res[1])
         else:
-            w_a_approx = np.append(solve.w_a[0 if group<window_size else n_players:],solve.w_a[-n_players:])
-            w_g_approx = np.append(solve.w_g[0 if group<window_size else n_players:],solve.w_g[-n_players:])
+            w_a_approx = np.append(solve.w_a[0 if tournament_group<window_size else n_players:],solve.w_a[-n_players:])
+            w_g_approx = np.append(solve.w_g[0 if tournament_group<window_size else n_players:],solve.w_g[-n_players:])
             res = solve(A_,G_,a,1,w_a_approx,w_g_approx)
             ranks.append(res[0])
             reps.append(res[1])
