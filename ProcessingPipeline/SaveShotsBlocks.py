@@ -104,7 +104,7 @@ if __name__=='__main__':
     data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
     data.columns = [col.replace('#','') for col in data.columns]
     
-    with open('./../PickleFiles/num_to_ind_shot.pkl.pkl','r') as pickleFile:
+    with open('./../PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
         num_to_ind = pickle.load(pickleFile)
 
     with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
