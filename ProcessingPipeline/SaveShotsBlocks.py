@@ -122,7 +122,7 @@ if __name__=='__main__':
     data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values.tolist()])
     n_tournament_groups = len(pd.unique(data.Tournament_Group))
 
-    num_cores = 8
+    num_cores = multiprocessing.cpu_count()-3
     slices = partition(range(n_tournament_groups),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
