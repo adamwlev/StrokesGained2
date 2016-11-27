@@ -66,7 +66,7 @@ if __name__=="__main__":
         min_ = max(0,tournament_group-window_size+1)*n_players
         max_ = n_players*(group+1)
         A_,G_ = A[min_:max_,min_:max_],G[min_:max_,min_:max_]
-        if group==0:
+        if tournament_group==0:
             res = solve(A_,G_,a,1)
             ranks.append(res[0])
             reps.append(res[1])
