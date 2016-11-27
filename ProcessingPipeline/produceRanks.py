@@ -44,19 +44,9 @@ if __name__=="__main__":
 
     with open('./../PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
         num_to_ind = pickle.load(pickleFile)
-
-    with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
-        tourn_order = pickle.load(pickleFile)
     
-    data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
-    data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
     n_players = len(num_to_ind)
-
-    data = pd.concat([data[(data.Year==year) & (data['Permanent_Tournament_#']==tourn)] for year,tourn in tourn_order])
-    tups = data.drop_duplicates(['Year','Permanent_Tournament_#'])[['Year','Permanent_Tournament_#']].values.tolist()
-    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
-    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_#']].values.tolist()])
-    n_tournament_groups = len(pd.unique(data.Tournament_Group))
+    n_tournament_groups = 138
 
     _,cat,epsilon,e_d,e_t,w_d,a,beta = sys.argv
     if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
