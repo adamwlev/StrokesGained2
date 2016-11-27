@@ -52,8 +52,7 @@ if __name__=="__main__":
     data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
     n_players = len(num_to_ind)
 
-    window_size = 28
-    data = pd.concat([data[(data.Year==year) & (data.Permanent_Tournament_==tourn)] for year,tourn in tourn_order])
+    data = pd.concat([data[(data.Year==year) & (data['Permanent_Tournament_#']==tourn)] for year,tourn in tourn_order])
     tups = data.drop_duplicates(['Year','Permanent_Tournament_#'])[['Year','Permanent_Tournament_#']].values.tolist()
     tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
     data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_#']].values.tolist()])
@@ -68,6 +67,7 @@ if __name__=="__main__":
     ranks,reps = [],[]
     A = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
     G = bmat([[bmat([[load_sparse_csc('./../cats/cats_w%s-%s-%s-%s/%s_%d_g.npz' % (epsilon,e_d,e_t,w_d,cat,group)) * my_norm(abs(i-group),beta)] for i in range(n_tournament_groups)]) for group in range(n_tournament_groups)]],format='csc')
+    window_size = 28
     for group in range(n_tournament_groups):
         min_ = max(0,group-window_size)*n_players
         max_ = n_players*(group+1)
