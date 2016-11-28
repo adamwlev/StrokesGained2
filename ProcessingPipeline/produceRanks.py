@@ -15,17 +15,10 @@ if __name__=="__main__":
         return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
     def alpha(A,a):
-        A.data[A.data<1e-6] = 0
-        A.data[np.isnan(A.data)]=0
         w,v = eigs(A,k=1,which='LM')
         return a/w[0].real
 
     def solve(mat,mat_1,a,min_reps,x_guess=None,x_guess1=None):
-        mat.data[mat_1.data<1e-6] = 0
-        mat_1.data[mat_1.data<1e-6] = 0
-        mat.data[np.isnan(mat.data)] = 0
-        mat_1.data[np.isnan(mat_1.data)] = 0
-        
         alpha_ = alpha(mat,a)
         S = eye(mat.shape[0],format='csc')-alpha_*mat
         w_a = gmres(S,mat.sum(1),x0=x_guess)[0]
@@ -36,6 +29,7 @@ if __name__=="__main__":
         solve.w_a = w_a
         solve.w_g = w_g
         w_a[w_g<min_reps] = 0
+        w_g[w_g<min_reps] = 0
         return ((w_a/w_g)[-n_players:],w_g[-n_players:])
 
     def load_sparse_csc(filename):
