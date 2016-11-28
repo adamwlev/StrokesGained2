@@ -94,6 +94,7 @@ if __name__=='__main__':
         return [lst[i::n] for i in xrange(n)]
 
     def run_a_cat(cat):
+        cat = cat[0]
         A = np.array([[take_weighted_ave([player_perfs[cat][(tournament_group,player_ind)] 
                                                   if (tournament_group,player_ind) in player_perfs[cat] else (0.,0.)
                                                   for tournament_group in range(i)],BETA)
