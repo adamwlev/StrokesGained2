@@ -41,7 +41,10 @@ if __name__=="__main__":
 
     _,cat,epsilon,e_d,e_t,w_d,a,beta = sys.argv
     if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta)):
-        os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
+        try:
+            os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
+        except:
+            continue
 
     a,beta = tuple(map(float,[a,beta]))
     print cat
