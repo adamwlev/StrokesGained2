@@ -91,7 +91,7 @@ if __name__=='__main__':
 
     for cat in pd.unique(data.Adam_cat):
         A = np.array([[take_weighted_ave([player_perfs[cat][(tournament_group,player_ind)] 
-                                                  if (tournament_group,player_ind) in player_perfs else (0.,0.)
+                                                  if (tournament_group,player_ind) in player_perfs[cat] else (0.,0.)
                                                   for tournament_group in range(i)],BETA)
                                for i in range(n_tournament_groups)]
                               for player_ind in players])
