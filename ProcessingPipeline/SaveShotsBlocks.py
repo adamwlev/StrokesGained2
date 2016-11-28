@@ -64,7 +64,7 @@ if __name__=='__main__':
                     w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .05)**e_d
                     w_2 = 1/((np.abs(subset[i,4]-subset[j,4])+5)/100.0)**e_t
                     w = w_1*w_d + w_2*(1-w_d)
-                    arr[int(subset[i,5]),int(subset[j,5])] += w/(1.0 + math.exp(subset[j,3]-subset[i,3]))
+                    arr[int(subset[i,5]),int(subset[j,5])] += w * (1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5)
                     arr1[int(subset[i,5]),int(subset[j,5])] += w
             mat,mat1 = csc_matrix(arr),csc_matrix(arr1)
             return (mat,mat1)
