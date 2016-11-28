@@ -95,7 +95,7 @@ if __name__=='__main__':
                                                   for tournament_group in range(i)],BETA)
                                for i in range(n_tournament_groups)]
                               for player_ind in players])
-        np.save('./../Broadie_aves/%s_%g.npy' % (cat,BETA),A)
+        np.save('./../Broadie_Aves/%s_%g.npy' % (cat,BETA),A)
         
 
 
