@@ -44,31 +44,33 @@ if __name__=='__main__':
         if cat=="Other":
             return 'other'    
 
-    data = pd.concat([pd.read_csv('./../data/%d.csv' % year) for year in range(2004,2017)][['Strokes_Gained/Baseline','Year','Permanent_Tournament_#'
-                                                                                        'Course_#','Round','Hole','Player_#','Cat','Par_Value']])
+    data = pd.concat([pd.read_csv('./../data/2003.csv')[['Year','Permanent_Tournament_#','Distance_from_hole',
+                                                         'Course_#','Round','Hole','Player_#','Cat','Par_Value']]] +
+                     [pd.read_csv('./../data/%d.csv' % year)[['Strokes_Gained/Baseline','Year','Permanent_Tournament_#','Distance_from_hole',
+                                                              'Course_#','Round','Hole','Player_#','Cat','Par_Value']] for year in range(2004,2017)])
+    
+    with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
+        tourn_order = pickle.load(pickleFile)
+
+    data = pd.concat([data[(data.Year==year) & (data['Permanent_Tournament_#']==tourn)] for year,tourn in tourn_order])
+    tups = data.drop_duplicates(['Year','Permanent_Tournament_#'])[['Year','Permanent_Tournament_#']].values.tolist()
+    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
+    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_#']].values.tolist()])
+    n_tournament_groups = len(pd.unique(data.Tournament_Group))
+
+    data = data[data['Strokes_Gained/Baseline'].notnull()]
     data.insert(len(data.columns),'Adam_cat',[convert_adam_cats(cat,dist,par) for cat,dist,par in zip(data.Cat,data.Distance_from_hole,data.Par_Value)])
-    to_remove = set(tuple(tup) for tup in data[data['Strokes_Gained/Baseline']==0][['Year','Course_#','Round','Hole','Player_#']].values.tolist())
-    data = data.iloc[[u for u,tup in enumerate(data[['Year','Course_#','Round','Hole','Player_#']].values.tolist()) if tuple(tup) not in to_remove]]
     field_for_cat = data.groupby(['Year','Course_#','Round','Adam_cat'])
     d = field_for_cat['Strokes_Gained/Baseline'].mean().to_dict()
     data.insert(len(data.columns),'SG_of_Field',[d[tup] for tup in zip(data.Year,data['Course_#'],data.Round,data.Adam_cat)])
     data.insert(len(data.columns),'Strokes_Gained_Broadie',data['Strokes_Gained/Baseline']-data.SG_of_Field)
 
-    with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
-        tourn_order = pickle.load(pickleFile)
-
     with open('./../PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
         num_to_ind = pickle.load(pickleFile)
 
-    data.insert(5,'Player_Index',[num_to_ind[num] for num in data.Player_])
+    data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
     n_players = len(num_to_ind)
-    players = range(len(num_to_inds))
-
-    data = pd.concat([data[(data.Year==year) & (data.Permanent_Tournament_==tourn)] for year,tourn in tourn_order])
-    tups = data.drop_duplicates(['Year','Permanent_Tournament_#'])[['Year','Permanent_Tournament_#']].values.tolist()
-    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
-    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_#']].values.tolist()])
-    n_tournament_groups = len(pd.unique(data.Tournament_Group))
+    players = range(len(num_to_ind))
 
     player_perfs = {}
     for cat,df in data.groupby('Adam_cat'):
@@ -81,14 +83,11 @@ if __name__=='__main__':
     def take_weighted_ave(a,beta,window_size=28):
         if not a:
             return np.nan
-        counts = np.array([count for count,total in a[max(0,len(a)-window_size):]])
-        if counts.sum()==0:
+        counts,sums = zip(*a[max(0,len(a)-window_size):])
+        if np.sum(counts)==0:
             return np.nan
-        means = [total/count if count!=0 else 0 for count,total in a[max(0,len(a)-window_size):]]
-        x = list(itertools.chain.from_iterable([[means[j]]*int(counts[j]) for j in range(len(counts))]))
-        weights = list(itertools.chain.from_iterable([[my_norm(len(counts)-j-1,beta)]*int(counts[j]) 
-                                                      for j in range(len(counts))]))
-        return np.dot(x,weights)/np.sum(weights)
+        weights = np.array([my_norm(len(counts)-j-1,beta) for j in range(len(counts))])
+        return np.sum(np.dot(weights,sums)/np.sum(np.dot(weights,counts)))
 
     for cat in pd.unique(data.Adam_cat):
         A = np.array([[take_weighted_ave([player_perfs[(tournament_group,player_ind)] 
@@ -96,7 +95,7 @@ if __name__=='__main__':
                                                   for tournament_group in range(i)],BETA)
                                for i in range(n_tournament_groups)]
                               for player_ind in players])
-        np.save('./../Broadie_aves/%s_%g.npy' % (cat,BETA),A)
+        np.save('./Broadie_aves/%s_%g.npy' % (cat,BETA),A)
         
 
 
