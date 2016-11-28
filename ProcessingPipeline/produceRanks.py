@@ -44,7 +44,7 @@ if __name__=="__main__":
         try:
             os.makedirs('./../ranks/ranks-%s-%s-%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d,a,beta))
         except:
-            continue
+            pass
 
     a,beta = tuple(map(float,[a,beta]))
     print cat
