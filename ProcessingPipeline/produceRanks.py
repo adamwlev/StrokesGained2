@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
-import math
-from scipy.sparse import csc_matrix,csr_matrix,eye,bmat
-from scipy.sparse.linalg import eigs,inv,gmres
+from scipy.sparse import csc_matrix,eye,bmat
+from scipy.sparse.linalg import eigs,gmres
 from scipy.stats import norm
 import pickle
-from collections import defaultdict
 import multiprocessing
-import gc
 import os,sys
 
 if __name__=="__main__":
