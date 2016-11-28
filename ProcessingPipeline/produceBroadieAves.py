@@ -72,10 +72,10 @@ if __name__=='__main__':
     n_players = len(num_to_ind)
     players = range(len(num_to_ind))
 
-    player_perfs = {}
+    player_perfs = defaultdict(dict)
     for cat,df in data.groupby('Adam_cat'):
         d = df.groupby(['Tournament_Group','Player_Index'],as_index=False).agg({'Round':'count','Strokes_Gained_Broadie':'sum'})
-        player_perfs.update({tuple(tup[0:2]):tup[2:] for tup in d.values.tolist()})
+        player_perfs[cat].update({tuple(tup[0:2]):tup[2:] for tup in d.values.tolist()})
 
     def my_norm(x,BETA):
         return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
@@ -90,7 +90,7 @@ if __name__=='__main__':
         return np.sum(np.dot(weights,sums)/np.sum(np.dot(weights,counts)))
 
     for cat in pd.unique(data.Adam_cat):
-        A = np.array([[take_weighted_ave([player_perfs[(tournament_group,player_ind)] 
+        A = np.array([[take_weighted_ave([player_perfs[cat][(tournament_group,player_ind)] 
                                                   if (tournament_group,player_ind) in player_perfs else (0.,0.)
                                                   for tournament_group in range(i)],BETA)
                                for i in range(n_tournament_groups)]
