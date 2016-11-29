@@ -19,7 +19,7 @@ if __name__=="__main__":
 
 	def run_a_slice(cats):
 		for cat in cats:
-			if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s/%s_ranks.npy' % (eps_,e_t_,e_d_,w_d_,alpha_,beta_,cat)): 
+			if not os.path.exists('./../ranks/ranks-%s-%s-%s-%s-%s-%s/%s_ranks.npy' % (eps_,e_d_,e_t_,w_d_,alpha_,beta_,cat)): 
 				print 'Running produceRanks %s-%s-%s-%s-%s-%s %s' % (eps_,e_d_,e_t_,w_d_,alpha_,beta_,cat)
 				subprocess.call(["python","produceRanks.py" ,"%s" % cat,"%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_, "%s" % alpha_, "%s" % beta_])
 				cmd = "rsync -avL --progress -e \"ssh -i /home/ubuntu/aws_ds8key.pem\" /home/ubuntu/project/Rank_a_Golfer/ranks/ranks-%s-%s-%s-%s-%s-%s ubuntu@ec2-54-162-31-22.compute-1.amazonaws.com:~/project/Rank_a_Golfer/ranks/" % (eps_,e_d_,e_t_,w_d_,alpha_,beta_)
@@ -28,7 +28,7 @@ if __name__=="__main__":
 	def partition (lst, n):
 	    return [lst[i::n] for i in xrange(n)]
 
-	for eps_,e_d_,e_t_,w_d_,alpha_,beta_ in itertools.product(*[eps,e_d,e_t,w_d,alpha,beta]):
+	for eps_,e_t_,e_d_,w_d_,alpha_,beta_ in itertools.product(*[eps,e_t,e_d,w_d,alpha,beta]):
 		if not os.path.exists('./../cats/cats_w%s-%s-%s-%s' % (eps_,e_d_,e_t_,w_d_)):
 			print 'Running SaveShotsBlocks %s-%s-%s-%s' % (eps_,e_d_,e_t_,w_d_)
 			subprocess.call(["python","SaveShotsBlocks.py","%s" % eps_,"%s" % e_d_,"%s" % e_t_,"%s" % w_d_])
