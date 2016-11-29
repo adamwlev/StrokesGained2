@@ -18,7 +18,7 @@ if __name__=="__main__":
 	e_t = ['0.15']
 	e_d = ['0.23']
 	w_d = ['0.7']
-	alpha = ['0.99']
+	alpha = ['0.999']
 	beta = ['3','4','7.5','13','17','19']
 
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
