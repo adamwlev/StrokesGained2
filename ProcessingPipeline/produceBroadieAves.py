@@ -4,6 +4,7 @@ import pickle
 from collections import defaultdict
 from scipy.stats import norm
 import sys
+import multiprocessing
 
 if __name__=='__main__':
 
@@ -89,13 +90,23 @@ if __name__=='__main__':
         weights = np.array([my_norm(len(counts)-j-1,beta) for j in range(len(counts))])
         return np.sum(np.dot(weights,sums)/np.sum(np.dot(weights,counts)))
 
-    for cat in pd.unique(data.Adam_cat):
+    def partition (lst, n):
+        return [lst[i::n] for i in xrange(n)]
+
+    def run_a_cat(cat):
+        cat = cat[0]
         A = np.array([[take_weighted_ave([player_perfs[cat][(tournament_group,player_ind)] 
                                                   if (tournament_group,player_ind) in player_perfs[cat] else (0.,0.)
                                                   for tournament_group in range(i)],BETA)
                                for i in range(n_tournament_groups)]
                               for player_ind in players])
         np.save('./../Broadie_Aves/%s_%g.npy' % (cat,BETA),A)
+
+    cats = pd.unique(data.Adam_cat).tolist()
+    num_cores = len(cats)
+    slices = partition(cats,num_cores)
+    pool = multiprocessing.Pool(num_cores)
+    results = pool.map(run_a_cat, slices)
+    pool.close()
+
         
-
-
