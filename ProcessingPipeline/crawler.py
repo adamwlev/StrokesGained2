@@ -7,12 +7,19 @@ import multiprocessing
 
 if __name__=="__main__":
 	
+	# eps = ['300']
+	# e_t = ['0.15','0.4']
+	# e_d = ['0.23','0.66']
+	# w_d = ['0.7','0.95']
+	# alpha = ['0.9','0.99']
+	# beta = ['5','11','15']
+
 	eps = ['300']
-	e_t = ['0.15','0.4']
-	e_d = ['0.23','0.66']
-	w_d = ['0.7','0.95']
-	alpha = ['0.9','0.99']
-	beta = ['5','11','15']
+	e_t = ['0.15']
+	e_d = ['0.23']
+	w_d = ['0.7']
+	alpha = ['0.99']
+	beta = ['3','4','7.5','13','17','19']
 
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
