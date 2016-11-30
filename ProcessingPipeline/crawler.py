@@ -16,10 +16,10 @@ if __name__=="__main__":
 
 	eps = ['300']
 	e_t = ['0.55']
-	e_d = ['0.23']
-	w_d = ['0.7']
-	alpha = ['0.99']
-	beta = ['4','7.5','13','17','19']
+	e_d = ['0.3']
+	w_d = ['0.6']
+	alpha = ['0.999']
+	beta = ['7','12','16','20.5']
 
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
