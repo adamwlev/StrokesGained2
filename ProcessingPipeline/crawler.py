@@ -19,7 +19,7 @@ if __name__=="__main__":
 	e_d = ['0.3']
 	w_d = ['0.6']
 	alpha = ['0.999']
-	beta = ['7','12','16','20.5']
+	beta = ['21.5','22.5','23.5']
 
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
