@@ -118,7 +118,7 @@ if __name__=='__main__':
         
 
         #np.save('./../Broadie_Aves/%s_%g.npy' % (cat,BETA),A)
-        np.save('./../Broadie_Aves/%s_%gG.npy' % (cat,BETA),A)
+        np.save('./../Broadie_Aves/%s_%gG.npy' % (cat,BETA),G)
 
     cats = pd.unique(data.Adam_cat).tolist()
     num_cores = len(cats)
