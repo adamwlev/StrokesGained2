@@ -93,7 +93,7 @@ if __name__=='__main__':
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group),mat)
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group),mat1)
                 #cmd = "rsync -avL --progress -e \"ssh -i /home/ubuntu/aws_ds8key.pem\" /home/ubuntu/project/Rank_a_Golfer/cats/cats_w%g-%g-%g-%g ubuntu@ec2-54-162-31-22.compute-1.amazonaws.com:~/project/Rank_a_Golfer/cats/" % (epsilon*100,e_d,e_t,w_d)
-                os.system(cmd)
+                #os.system(cmd)
         return
 
     _,epsilon,e_d,e_t,w_d = sys.argv
