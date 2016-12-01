@@ -91,7 +91,11 @@ if __name__=='__main__':
         return np.sum(np.dot(weights,sums)/np.sum(np.dot(weights,counts)))
 
     def for_counts(a,beta,window_size=28):
+        if not a:
+            return np.nan
         counts,sums = zip(*a[max(0,len(a)-window_size):])
+        if np.sum(counts)==0:
+            return np.nan
         weights = np.array([my_norm(len(counts)-j-1,beta) for j in range(len(counts))])
         return np.sum(np.dot(weights,counts)/np.sum(weights))
 
