@@ -64,8 +64,8 @@ if __name__=='__main__':
                     w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .05)**e_d
                     w_2 = 1/((np.abs(subset[i,4]-subset[j,4])+5)/100.0)**e_t
                     w = w_1*w_d + w_2*(1-w_d)
-                    arr[int(subset[i,5]),int(subset[j,5])] += w * (1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5)
-                    arr1[int(subset[i,5]),int(subset[j,5])] += w
+                    arr[int(subset[i,5]),int(subset[j,5])] += (1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5)
+                    arr1[int(subset[i,5]),int(subset[j,5])] += 1
             mat,mat1 = csc_matrix(arr),csc_matrix(arr1)
             return (mat,mat1)
 
@@ -92,7 +92,7 @@ if __name__=='__main__':
                         mat1 += res[1]
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group),mat)
                 save_sparse_csc('./../cats/cats_w%g-%g-%g-%g/%s_%d_g' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group),mat1)
-                cmd = "rsync -avL --progress -e \"ssh -i /home/ubuntu/aws_ds8key.pem\" /home/ubuntu/project/Rank_a_Golfer/cats/cats_w%g-%g-%g-%g ubuntu@ec2-54-162-31-22.compute-1.amazonaws.com:~/project/Rank_a_Golfer/cats/" % (epsilon*100,e_d,e_t,w_d)
+                #cmd = "rsync -avL --progress -e \"ssh -i /home/ubuntu/aws_ds8key.pem\" /home/ubuntu/project/Rank_a_Golfer/cats/cats_w%g-%g-%g-%g ubuntu@ec2-54-162-31-22.compute-1.amazonaws.com:~/project/Rank_a_Golfer/cats/" % (epsilon*100,e_d,e_t,w_d)
                 os.system(cmd)
         return
 

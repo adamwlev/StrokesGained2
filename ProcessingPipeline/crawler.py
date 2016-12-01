@@ -15,11 +15,11 @@ if __name__=="__main__":
 	# beta = ['5','11','15']
 
 	eps = ['300']
-	e_t = ['0.15']
-	e_d = ['0.23']
-	w_d = ['0.7']
+	e_t = ['0.99']
+	e_d = ['0.99']
+	w_d = ['0.99']
 	alpha = ['0.99']
-	beta = ['23','25','27','31','33']
+	beta = ['4','7','15','18']
 
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
 			'rough375','fairway0','fairway300','fairway540','bunker','other']
