@@ -1,16 +1,18 @@
-def return_mats(BETA):
-	from scipy.sparse import bmat,csc_matrix
-	from scipy.stats import norm
-	import numpy as np
-	import pandas as pd
+from scipy.sparse import bmat,csc_matrix
+from scipy.stats import norm
+import numpy as np
+import pandas as pd
+from SaveRoundsBlocks import save_mats
 
-	def load_sparse_csc(filename):
-	    loader = np.load(filename)
-	    return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
+def load_sparse_csc(filename):
+    loader = np.load(filename)
+    return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
 
-	def my_norm(x,BETA):
-	    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
+def my_norm(x,BETA):
+    return norm.pdf(x,0,BETA)/norm.pdf(0,0,BETA)
 
+def return_mats(BETA,m,r):
+	save_mats(m,r)
 	data = pd.read_csv('./../data/round.csv')
 	data = data.loc[data['Permanent_Tournament_#']!=470] ## this is the match play championship, no round scores available
 	tups = data.drop_duplicates(['Tournament_Year','Permanent_Tournament_#'])[['Tournament_Year','Permanent_Tournament_#']].values.tolist()
