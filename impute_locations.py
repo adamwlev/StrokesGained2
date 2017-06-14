@@ -59,20 +59,20 @@ class Imputer():
         
         c = 0
         while np.mean(abs_deviation) > max_allowable_mean_abs_deviation:
-            print c, len(self.df), np.mean(abs_deviation)
+            #print c, len(self.df), np.mean(abs_deviation)
             c += 1
             if c>=25:
-                print '\033[91m','25 attempts were made to remove outliers. Imputation failed. Removed whole hole.','\033[0m'
+                #print '\033[91m','25 attempts were made to remove outliers. Imputation failed. Removed all shots.','\033[0m'
                 return False
             self.df = self.df[abs_deviation!=np.amax(abs_deviation)]
             self._set_attributes_before_finding_loc()
             loc_x, loc_y = self._find_loc()
             abs_deviation = np.abs(((self.x - loc_x)**2 + (self.y - loc_y)**2)**.5 - self.d)
      
-        print '\033[91m',\
-              '%d of the %d shots removed from consideration during imputation of hole location.' % (c,len(self.df)),\
-              'Final Error: %g' % np.mean(abs_deviation),\
-              '\033[0m'
+        # print '\033[91m',\
+        #       '%d of the %d shots removed from consideration during imputation of %s location.' % (c,len(self.df),'tee box' if self.tee_box_flag else 'hole'),\
+        #       'Final Error: %g' % np.mean(abs_deviation),\
+        #       '\033[0m'
         
         if len(self.df)==0: 
             return False
@@ -87,4 +87,4 @@ class Imputer():
         of the z coordinate of the hole is impossible, I'll use this as an approximation for the z coordinate of the hole. """
         min_dist = self.df[self.dist_col].min()
         min_shot = self.df[self.df[self.dist_col]==min_dist].iloc[0]
-        self.z_of_closest = min_shot[self.z_col]
+        self.loc_z = min_shot[self.z_col]
