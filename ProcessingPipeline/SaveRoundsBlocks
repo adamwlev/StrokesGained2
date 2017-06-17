@@ -1,8 +1,0 @@
-import pandas as pd
-import numpy as np
-from scipy.sparse import csc_matrix
-import math
-import pickle
-
-data = pd.read_csv('./../data/round.csv')
-data = data.loc[data['Permanent_Tournament_#']!=470] ## this is the match play championship, no round scores available

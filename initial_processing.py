@@ -190,5 +190,8 @@ def doit(year):
     data = data[non_zero_mask]
     print 'Dropped %d shots from dropping shots with missing coordinates.' % (before-len(data),)
 
-    data.to_csv('%d.csv' % year,index=False)
+    data['Stroke'] = data.groupby(id_cols)['Penalty_Shots'].cumsum() + data['Real_Shots']
+    data['Strokes_from_starting_location'] = [counter[tuple(tup[:-1])] - tup[-1] + 1 for tup in data[id_cols + ['Stroke']].values]
+
+    data.to_csv('data/%d.csv' % year,index=False)
 
