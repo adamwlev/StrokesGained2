@@ -1,23 +1,12 @@
 import pandas as pd
 import numpy as np
 from scipy.sparse import csc_matrix,bmat
-import matplotlib.pyplot as plt
-
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 from sklearn.model_selection import GroupKFold
+import xgboost as xgb
+import gc
 
-from sklearn.ensemble import GradientBoostingRegressor
-
-def make_monitor(running_mean_len):
-    def monitor(i,self,args):
-        if np.mean(self.oob_improvement_[max(0,i-running_mean_len+1):i+1])<0:
-            return True
-        else:
-            return False
-    return monitor
-
-def doit(learn_rate,num_folds,with_slope,with_gtww,with_cryh_dum,
-         with_exp_dum,with_shot_locs,with_hole_locs):
+def doit():
     data = pd.concat([pd.read_csv('data/%d.csv' % year, 
                                   usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
                                            'Start_X_Coordinate','End_X_Coordinate',
@@ -28,7 +17,9 @@ def doit(learn_rate,num_folds,with_slope,with_gtww,with_cryh_dum,
                       for year in range(2003,2018)])
 
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
+    shot_id_cols = id_cols + ['Player_#','Shot']
     cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
+    num_folds = 15
 
     z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
     data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
@@ -44,99 +35,108 @@ def doit(learn_rate,num_folds,with_slope,with_gtww,with_cryh_dum,
     data = data.drop(['End_Z_Coordinate','last_shot_mask','dist_using_coords','dist_error',
                       'Start_X_Coordinate','End_X_Coordinate','Start_Y_Coordinate','End_Y_Coordinate'],axis=1)
 
-    dum_cols = []
-    if with_cryh_dum:
-        dum_cols = ['Course_#','Year','Hole','Round']
-    if with_hole_locs:
-        dum_cols.append('loc_string_hole')
-    if with_shot_locs:
-        dum_cols.append('loc_string')
-    
-    results = {}
+    delta_map = {'Green':.4,'Fairway':.65,'Intermediate Rough':.7,'Primary Rough':.75,
+                 'Fringe':.5,'Bunker':.8,'Other':1.}
+    le = LabelEncoder()
+    lb = LabelBinarizer(sparse_output=True)
 
+    results = {}
     for cat in cats:
         print cat
         data_ = data[data.Cat==cat]
         groups = ['-'.join(map(str,tup)) for tup in data_[id_cols].values.tolist()]
-        le = LabelEncoder()
         groups = le.fit_transform(groups)
         groups_dict = {group:u for u,group in enumerate(set(groups))}
         perm = np.random.permutation(len(groups_dict))
         groups = [perm[groups_dict[group]] for group in groups]
 
-        cols = ['Distance_from_hole']
-        if with_slope:
-            cols.append('Start_Z_Coordinate')
-        if cat!='Green' and with_gtww:
+        cols = ['Distance_from_hole','Start_Z_Coordinate']
+        if cat!='Green':
             cols.append('Green_to_work_with')
         X = data_[cols].values.astype(float)
         X = csc_matrix(X)
-        if with_exp_dum:
-            lb = LabelBinarizer(sparse_output=True)
-            cols = ['Course_#',['Course_#','Year'],['Course_#','Year','Round'],['Course_#','Hole']]
-            to_encode = []
-            for col in cols:
-                if isinstance(col,str):
-                    to_encode.append([str(s) for s in data_[col].values])
-                else:
-                    to_encode.append(['-'.join(map(str,tup)) for tup in data_[col].values])
-            X_ = bmat([[lb.fit_transform(c) for c in to_encode]],format='csc')
-            X = bmat([[X,X_]],format='csc')
-        if dum_cols:
-            lb = LabelBinarizer(sparse_output=True)
-            X_ = bmat([[lb.fit_transform(data_[col].values) for col in dum_cols]],format='csc')
-            X = bmat([[X,X_]],format='csc')
-
-        X.data[np.isnan(X.data)] = 0
-        X.data[np.isinf(X.data)] = 0
+        cols = ['Course_#',['Course_#','Year'],['Course_#','Year','Round'],['Course_#','Hole']]
+        to_encode = []
+        for col in cols:
+            if isinstance(col,str):
+                to_encode.append([str(s) for s in data_[col].values])
+            else:
+                to_encode.append(['-'.join(map(str,tup)) for tup in data_[col].values])
+        X_ = bmat([[lb.fit_transform(c) for c in to_encode]],format='csc')
+        X = bmat([[X,X_]],format='csc')
         y = data_.Strokes_from_starting_location.values
 
-        if learn_rate>=.5:
-            mon_size = 5
-        elif learn_rate>=.1:
-            mon_size = 8
-        else:
-            mon_size = 12
+        def psuedo_huber(preds, dtrain):
+            labels = dtrain.get_label()
+            delta = psuedo_huber.delta
+            resids = preds - labels
+            grad = resids * (1 + (resids/delta)**2)**(-.5)
+            hess = (1 + (resids/delta)**2)**(-1.5)
+            return grad, hess
+
+        params = {'objective':'reg:linear','eval_metric':'mae','min_child_weight':20,
+                  'subsample':.9,'tree_method':'approx',
+                  'eta':.015,'lambda':5,'max_depth':8,'base_score':y.mean()}
+        psuedo_huber.delta = delta_map[cat]
+
+        def evalerror(preds, dtrain):
+            labels = dtrain.get_label()
+            resids = np.abs(preds - labels)
+            return 'error', np.mean([np.mean(resids),np.percentile(resids,80),np.percentile(resids,99)])
+
+        def find_num_trees():
+            early_stopping_rounds = 8
+            num_round = 10000
+            trees = []
+            for train,test in cv.split(X,y,groups):
+                dtrain = xgb.DMatrix(X[train],label=y[train])
+                dtest = xgb.DMatrix(X[test],label=y[test])
+                watchlist  = [(dtrain,'train'),(dtest,'eval')]
+                bst = xgb.train(params,dtrain,num_round,watchlist,psuedo_huber,evalerror,
+                                early_stopping_rounds=early_stopping_rounds,verbose_eval=True)
+                trees.append(bst.best_iteration)
+            return int(round(np.mean(trees)))
 
         cv = GroupKFold(n_splits=num_folds)
+        num_trees = find_num_trees()
+        groups = ['-'.join(map(str,tup)) for tup in data_[id_cols].values.tolist()]
+        groups = le.fit_transform(groups)
+        groups_dict = {group:u for u,group in enumerate(set(groups))}
+        perm = np.random.permutation(len(groups_dict))
+        groups = [perm[groups_dict[group]] for group in groups]
+
         for u,(train,test) in enumerate(cv.split(X,y,groups)):
-            gbr = GradientBoostingRegressor(loss='huber',learning_rate=learn_rate,n_estimators=40000,
-                                            subsample=.75,verbose=1,alpha=.93,max_features=.8)
-            monitor = make_monitor(mon_size)
-            gbr.fit(X[train],y[train],monitor=monitor)
-            predictions = gbr.predict(X[test])
+            dtrain = xgb.DMatrix(X[train],label=y[train])
+            dtest = xgb.DMatrix(X[test])
+            bst = xgb.train(params,dtrain,num_trees,obj=psuedo_huber)
+            predictions = bst.predict(X[test])
             print np.mean(predictions<1.0)
             predictions[predictions<1.0] = 1.0
             train_error = np.mean(np.abs(gbr.predict(X[train])-y[train]))
             test_error = np.mean(np.abs(predictions-y[test]))
-            if cat not in results:
-                results[cat] = []
-            results[cat].append((train_error,test_error))
             print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
-            #results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
-    return results
+            results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
 
-
-# for year in range(2003,2018):
-#     data = pd.read_csv('../data/%d.csv' % year)
-#     if year==2017:
-#         data = data[data['Permanent_Tournament_#']!=18]
-#         data['Hole_Score'] = pd.to_numeric(data['Hole_Score'])
-#     if 'Difficulty_Start' in data.columns:
-#         data = data.drop('Difficulty_Start',axis=1)
-#     tee_difficulty_dict = {}
-#     for tup,df in data.groupby(id_cols):
-#         tee_difficulty_dict[tup] = df.groupby('Player_#').Stroke.max().mean()
-#     data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
-#     data.loc[data.Shot==1,'Difficulty_Start'] = [tee_difficulty_dict[tuple(tup)]
-#                                                  if tuple(tup) in tee_difficulty_dict else np.nan
-#                                                  for tup in data[data.Shot==1][id_cols].values]
-#     data.loc[data.Shot!=1,'Difficulty_Start'] = [results[tuple(tup)]
-#                                                  if tuple(tup) in results else np.nan
-#                                                  for tup in data[data.Shot!=1][shot_id_cols].values]
-#     data = data.dropna(subset=['Difficulty_Start'])
-#     z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
-#     data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
-#     data.to_csv('%d.csv' % year,index=False)
-
-
+    data = None
+    gc.collect()
+    for year in range(2003,2018):
+        data = pd.read_csv('../data/%d.csv' % year)
+        if year==2017:
+            data = data[data['Permanent_Tournament_#']!=18]
+            data['Hole_Score'] = pd.to_numeric(data['Hole_Score'])
+        if 'Difficulty_Start' in data.columns:
+            data = data.drop('Difficulty_Start',axis=1)
+        tee_difficulty_dict = {}
+        for tup,df in data.groupby(id_cols):
+            tee_difficulty_dict[tup] = df.groupby('Player_#').Stroke.max().mean()
+        data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
+        data.loc[data.Shot==1,'Difficulty_Start'] = [tee_difficulty_dict[tuple(tup)]
+                                                     if tuple(tup) in tee_difficulty_dict else np.nan
+                                                     for tup in data[data.Shot==1][id_cols].values]
+        data.loc[data.Shot!=1,'Difficulty_Start'] = [results[tuple(tup)]
+                                                     if tuple(tup) in results else np.nan
+                                                     for tup in data[data.Shot!=1][shot_id_cols].values]
+        data = data.dropna(subset=['Difficulty_Start'])
+        z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
+        data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
+        data.to_csv('%d.csv' % year,index=False)
