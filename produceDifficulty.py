@@ -109,10 +109,10 @@ def doit():
             dtrain = xgb.DMatrix(X[train],label=y[train])
             dtest = xgb.DMatrix(X[test])
             bst = xgb.train(params,dtrain,num_trees,obj=psuedo_huber)
-            predictions = bst.predict(X[test])
+            predictions = bst.predict(dtest)
             print np.mean(predictions<1.0)
             predictions[predictions<1.0] = 1.0
-            train_error = np.mean(np.abs(gbr.predict(X[train])-y[train]))
+            train_error = np.mean(np.abs(bst.predict(dtrain)-y[train]))
             test_error = np.mean(np.abs(predictions-y[test]))
             print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
             results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
