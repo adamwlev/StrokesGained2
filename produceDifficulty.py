@@ -4,17 +4,18 @@ from scipy.sparse import csc_matrix,bmat
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 from sklearn.model_selection import GroupKFold
 import xgboost as xgb
-import gc
+import gc, pickle
 
 def doit():
-    data = pd.concat([pd.read_csv('data/%d.csv' % year, 
-                                  usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
-                                           'Start_X_Coordinate','End_X_Coordinate',
-                                           'Start_Y_Coordinate','End_Y_Coordinate',
-                                           'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
-                                           'Strokes_from_starting_location','Cat','Distance_from_hole',
-                                           'Green_to_work_with','Shot','loc_string','loc_string_hole'])
-                      for year in range(2003,2018)])
+    # data = pd.concat([pd.read_csv('data/%d.csv' % year, 
+    #                               usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
+    #                                        'Start_X_Coordinate','End_X_Coordinate',
+    #                                        'Start_Y_Coordinate','End_Y_Coordinate',
+    #                                        'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
+    #                                        'Strokes_from_starting_location','Cat','Distance_from_hole',
+    #                                        'Green_to_work_with','Shot','loc_string','loc_string_hole'])
+    #                   for year in range(2003,2018)])
+    data = pd.read_csv('to_send.csv.gz')
 
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
     shot_id_cols = id_cols + ['Player_#','Shot']
@@ -35,8 +36,8 @@ def doit():
     data = data.drop(['End_Z_Coordinate','last_shot_mask','dist_using_coords','dist_error',
                       'Start_X_Coordinate','End_X_Coordinate','Start_Y_Coordinate','End_Y_Coordinate'],axis=1)
 
-    delta_map = {'Green':.4,'Fairway':.65,'Intermediate Rough':.7,'Primary Rough':.75,
-                 'Fringe':.5,'Bunker':.8,'Other':1.}
+    # delta_map = {'Green':.4,'Fairway':.65,'Intermediate Rough':.7,'Primary Rough':.75,
+    #              'Fringe':.5,'Bunker':.8,'Other':1.}
     le = LabelEncoder()
     lb = LabelBinarizer(sparse_output=True)
 
@@ -76,13 +77,17 @@ def doit():
 
         params = {'objective':'reg:linear','eval_metric':'mae','min_child_weight':20,
                   'subsample':.9,'tree_method':'approx',
-                  'eta':.015,'lambda':5,'max_depth':8,'base_score':y.mean()}
-        psuedo_huber.delta = delta_map[cat]
+                  'eta':.01,'lambda':5,'max_depth':8,'base_score':y.mean()}
+        psuedo_huber.delta = .4#delta_map[cat]
 
         def evalerror(preds, dtrain):
             labels = dtrain.get_label()
             resids = np.abs(preds - labels)
-            return 'error', np.mean([np.mean(resids),np.percentile(resids,80),np.percentile(resids,99)])
+            mean_error = np.mean(resids)
+            error_80 = np.percentile(resids,80)
+            error_99 = np.percentile(resids,99)
+            overall_error = np.mean(np.array([mean_error,error_80,error_99]))
+            return [('error_80',error_80),('error_99',error_99),('error',overall_error)]
 
         def find_num_trees():
             early_stopping_rounds = 8
@@ -117,26 +122,6 @@ def doit():
             print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
             results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
 
-    data = None
-    gc.collect()
-    for year in range(2003,2018):
-        data = pd.read_csv('../data/%d.csv' % year)
-        if year==2017:
-            data = data[data['Permanent_Tournament_#']!=18]
-            data['Hole_Score'] = pd.to_numeric(data['Hole_Score'])
-        if 'Difficulty_Start' in data.columns:
-            data = data.drop('Difficulty_Start',axis=1)
-        tee_difficulty_dict = {}
-        for tup,df in data.groupby(id_cols):
-            tee_difficulty_dict[tup] = df.groupby('Player_#').Stroke.max().mean()
-        data.insert(len(data.columns),'Difficulty_Start',[0]*len(data))
-        data.loc[data.Shot==1,'Difficulty_Start'] = [tee_difficulty_dict[tuple(tup)]
-                                                     if tuple(tup) in tee_difficulty_dict else np.nan
-                                                     for tup in data[data.Shot==1][id_cols].values]
-        data.loc[data.Shot!=1,'Difficulty_Start'] = [results[tuple(tup)]
-                                                     if tuple(tup) in results else np.nan
-                                                     for tup in data[data.Shot!=1][shot_id_cols].values]
-        data = data.dropna(subset=['Difficulty_Start'])
-        z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
-        data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
-        data.to_csv('%d.csv' % year,index=False)
+    with open('difficulty.pkl','wb') as pickle_file:
+        pickle.dump(results,pickle_file)
+    
