@@ -42,5 +42,5 @@ def doit():
                                                                 data.loc[data.Date.str.strip()=='00/00/0000',
                                                                          ['Tournament_Name','Round']].values]
         print year, (data.Date.str.strip()=='00/00/0000').sum()
-        data.to_csv('%d.csv' % year, index=False)
+        data.to_csv('data/%d.csv' % year, index=False)
 
