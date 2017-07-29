@@ -4,26 +4,26 @@ from scipy.sparse import csc_matrix,bmat
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 from sklearn.model_selection import GroupKFold
 import xgboost as xgb
-import gc, pickle
+import gc, json
 
 def doit():
-    # data = pd.concat([pd.read_csv('data/%d.csv' % year, 
-    #                               usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
-    #                                        'Start_X_Coordinate','End_X_Coordinate',
-    #                                        'Start_Y_Coordinate','End_Y_Coordinate',
-    #                                        'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
-    #                                        'Strokes_from_starting_location','Cat','Distance_from_hole',
-    #                                        'Green_to_work_with','Shot','loc_string','loc_string_hole'])
-    #                   for year in range(2003,2018)])
-    data = pd.read_csv('to_send.csv.gz')
-
+    data = pd.concat([pd.read_csv('data/%d.csv' % year, 
+                                  usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
+                                           'Start_X_Coordinate','End_X_Coordinate',
+                                           'Start_Y_Coordinate','End_Y_Coordinate',
+                                           'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
+                                           'Strokes_from_starting_location','Cat','Distance_from_hole',
+                                           'Green_to_work_with','Real_Shots'])
+                      for year in range(2003,2018)])
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
-    shot_id_cols = id_cols + ['Player_#','Shot']
+    shot_id_cols = id_cols + ['Player_#','Real_Shots']
     cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
     num_folds = 15
 
     z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
-    data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
+    data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)]
+                                                                        if tuple(tup) in z_of_hole else np.nan
+                                                                        for tup in data[id_cols].values])
     data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'].fillna(0)
 
     data['dist_using_coords'] = ((data.Start_X_Coordinate-data.End_X_Coordinate)**2
@@ -36,8 +36,8 @@ def doit():
     data = data.drop(['End_Z_Coordinate','last_shot_mask','dist_using_coords','dist_error',
                       'Start_X_Coordinate','End_X_Coordinate','Start_Y_Coordinate','End_Y_Coordinate'],axis=1)
 
-    # delta_map = {'Green':.4,'Fairway':.65,'Intermediate Rough':.7,'Primary Rough':.75,
-    #              'Fringe':.5,'Bunker':.8,'Other':1.}
+    delta_map = {'Green':.4,'Fairway':.65,'Intermediate Rough':.7,'Primary Rough':.75,
+                 'Fringe':.5,'Bunker':.8,'Other':1.}
     le = LabelEncoder()
     lb = LabelBinarizer(sparse_output=True)
 
@@ -76,21 +76,20 @@ def doit():
             return grad, hess
 
         params = {'objective':'reg:linear','eval_metric':'mae','min_child_weight':20,
-                  'subsample':.9,'tree_method':'approx',
-                  'eta':.01,'lambda':5,'max_depth':8,'base_score':y.mean()}
-        psuedo_huber.delta = .4#delta_map[cat]
+                  'subsample':.9,'tree_method':'approx','silent':1,
+                  'eta':.018,'lambda':5,'max_depth':8,'base_score':y.mean()}
+        psuedo_huber.delta = delta_map[cat]
 
         def evalerror(preds, dtrain):
             labels = dtrain.get_label()
             resids = np.abs(preds - labels)
             mean_error = np.mean(resids)
-            error_80 = np.percentile(resids,80)
-            error_99 = np.percentile(resids,99)
+            error_80, error_99 = np.percentile(resids,[80,99])
             overall_error = np.mean(np.array([mean_error,error_80,error_99]))
             return [('error_80',error_80),('error_99',error_99),('error',overall_error)]
 
         def find_num_trees():
-            early_stopping_rounds = 8
+            early_stopping_rounds = 25
             num_round = 10000
             trees = []
             for train,test in cv.split(X,y,groups):
@@ -98,8 +97,9 @@ def doit():
                 dtest = xgb.DMatrix(X[test],label=y[test])
                 watchlist  = [(dtrain,'train'),(dtest,'eval')]
                 bst = xgb.train(params,dtrain,num_round,watchlist,psuedo_huber,evalerror,
-                                early_stopping_rounds=early_stopping_rounds,verbose_eval=True)
+                                early_stopping_rounds=early_stopping_rounds,verbose_eval=False)
                 trees.append(bst.best_iteration)
+                print bst.best_iteration
             return int(round(np.mean(trees)))
 
         cv = GroupKFold(n_splits=num_folds)
@@ -122,6 +122,10 @@ def doit():
             print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
             results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
 
-    with open('difficulty.pkl','wb') as pickle_file:
-        pickle.dump(results,pickle_file)
+    data,dtrain,dtest,bst = None,None,None,None
+    gc.collect()
+
+    results = {str(key):float(value) for key,value in results.iteritems()}
+    with open('difficulty.json','w') as json_file:
+        json_file.write(json.dumps(results))
     

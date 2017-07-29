@@ -1,6 +1,7 @@
 import requests, time, json
 from datetime import date, datetime
 import pandas as pd
+import numpy as np
 
 def doit():
     data = pd.concat([pd.read_csv('data/%d.csv' % year, usecols=['Year','Course_#','Permanent_Tournament_#',
@@ -23,7 +24,7 @@ def doit():
         month,day,year = map(int,row['Date'].split('/'))
         date_ = date(year,month,day)
         try:
-            timestamp = time.mktime(date_.timetuple()) - 4*60*60 ##eastern time
+            timestamp = time.mktime(date_.timetuple()) - 7*60*60 ##pacific time
         except:
             print row['Date']
             continue
@@ -54,7 +55,7 @@ def doit():
         data.loc[data.nearest_hour==24,'nearest_hour'] = 23
         data.loc[data.nearest_hour==0,'nearest_hour'] = 12
         for u,key in enumerate(keys):
-          data[key] = [hourly_dict[(course,date,hour)][u]
-                       if (course,date,hour) in hourly_dict else np.nan
-                       for course,date,hour in zip(data['Course_#'],data['Date'],data['nearest_hour'])]
+            data[key] = [hourly_dict[(course,date_,hour)][u]
+                         if (course,date_,hour) in hourly_dict else np.nan
+                         for course,date_,hour in zip(data['Course_#'],data['Date'],data['nearest_hour'])]
         data.to_csv('data/%d.csv' % year, index=False)
