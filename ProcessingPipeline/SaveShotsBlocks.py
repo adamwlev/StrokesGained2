@@ -1,16 +1,11 @@
 import pandas as pd
 import numpy as np
-import itertools
-import math
 from scipy.sparse import csc_matrix
 from scipy.spatial.distance import pdist,squareform
-import os,sys
-import multiprocessing
-import gc
-import pickle
+import math,os,sys,multiprocessing,gc,pickle,itertools
 from collections import defaultdict
     
-if __name__=='__main__':
+def doit(data,e_d,e_t,w_d,m,r):
     cats = {}
     cats['green0'] = 'Cat=="Green" & Distance_from_hole<5'
     cats['fringe0'] = 'Cat=="Fringe" & Distance_from_hole<5'
@@ -54,18 +49,24 @@ if __name__=='__main__':
         return [lst[i::n] for i in xrange(n)]
 
     def run_a_slice(slice):
-        def get_matrix(tournament_group,conditon):
+        def sigmoid(x):
+            return (1./(1. + np.exp(m)**(-x)) + (np.tanh(r*x) + 1.)/2.)/2.
+
+        def get_matrix(tournament,conditon):
             arr,arr1 = np.zeros((n_players,n_players)),np.zeros((n_players,n_players))
-            for (round,course,hole),df in data[data.Tournament_Group==tournament_group].groupby(['Round','Course_','Hole']):
+            for (round,course,hole),df in data[data.tourn_num==tournament].groupby(['Round','Course_','Hole']):
                 subset = df.query(condition)[['Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index']].values
+                num_shots = subset.shape[0]
                 dists = squareform(pdist(subset[:,0:2]))
-                inds = [(i,j) for i,j in itertools.product(xrange(len(dists)),xrange(len(dists))) if i!=j and dists[i,j]<epsilon*subset[i,2] and dists[i,j]<epsilon*subset[j,2]]
-                for i,j in inds:
-                    # w_1 = 1/(dists[i,j]/((subset[i,2]+subset[j,2])/2) + .05)**e_d
-                    # w_2 = 1/((np.abs(subset[i,4]-subset[j,4])+5)/100.0)**e_t
-                    # w = w_1*w_d + w_2*(1-w_d)
-                    arr[int(subset[i,5]),int(subset[j,5])] += (1.0/(1.0 + math.exp(subset[j,3]-subset[i,3])) + .5)
-                    arr1[int(subset[i,5]),int(subset[j,5])] += 1
+                w_1 = w_1 = 1/(dists/(np.add.outer(subset[:,2],subset[:,2])/2) + .01)**e_d
+                w_2 = 1/((np.abs(np.subtract.outer(subset[:,4]-subset[:,4]))+5)/100.0)**e_t
+                w = w_1*w_d + w_2*(1-w_d)
+                inds_ = np.arange(num_shots**2)
+                inds = np.arange(num_shots**2)[inds_%num_shots!=0]
+                vals = np.squeeze(sigmoid(np.subtract.outer(subset[:,3],subset[:,3])).reshape(-1,1))
+                vals = vals[inds_%num_shots!=0]
+                np.add.at(arr,inds,w*vals)
+                np.add.at(arr1,inds,w*.5)
             mat,mat1 = csc_matrix(arr),csc_matrix(arr1)
             return (mat,mat1)
 
@@ -73,9 +74,10 @@ if __name__=='__main__':
             np.savez(filename,data=array.data,indices=array.indices,indptr=array.indptr,shape=array.shape)
             return
 
-        for tournament_group in slice:
+        for tournament in slice:
+            tournament += run_a_slice.base_number_tournaments ## for incremental
             for big_cat in meta_cats:
-                if os.path.exists('./../cats/cats_w%g-%g-%g-%g/%s_%d.npz' % (epsilon*100,e_d,e_t,w_d,big_cat,tournament_group)):
+                if os.path.exists('./../cats/cats_w%g-%g-%g/%s_%d.npz' % (e_d,e_t,w_d,big_cat,tournament)):
                     continue
                 mat,mat1 = None,None
                 for small_cat in meta_cats[big_cat]:
@@ -83,10 +85,10 @@ if __name__=='__main__':
                     try:
                         mat.data
                     except:
-                        mat,mat1 = get_matrix(tournament_group,condition)
+                        mat,mat1 = get_matrix(tournament,condition)
                         gc.collect()
                     else:
-                        res = get_matrix(tournament_group,condition)
+                        res = get_matrix(tournament,condition)
                         gc.collect()
                         mat += res[0]
                         mat1 += res[1]
@@ -96,34 +98,36 @@ if __name__=='__main__':
                 #os.system(cmd)
         return
 
-    _,epsilon,e_d,e_t,w_d = sys.argv
-    if not os.path.exists('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d)):
-        os.makedirs('./../cats/cats_w%s-%s-%s-%s' % (epsilon,e_d,e_t,w_d))
-    epsilon = float(epsilon)/100
+    if not os.path.exists('../cats/cats_w%s-%s-%s' % (e_d,e_t,w_d)):
+        os.makedirs('../cats/cats_w%s-%s-%s' % (e_d,e_t,w_d))
     e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
-    data = pd.concat([pd.read_csv('./../data/%d.csv' % (year)) for year in range(2003,2017)])
+
+    cols = ('Year','Permanent_Tournament_#')
+    data = pd.concat([pd.read_csv('data/rawdata/%d.txt' % year, sep=';', 
+                                  usecols=lambda x: x.strip().replace(' ','_') in cols) for year in range(2003,2018)])
+    tourn_order = data.drop_duplicates().values.tolist()
+
     data.columns = [col.replace('#','') for col in data.columns]
     
     with open('./../PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
         num_to_ind = pickle.load(pickleFile)
 
-    with open('./../PickleFiles/tourn_order.pkl','r') as pickleFile:
-        tourn_order = pickle.load(pickleFile)
-
+    for player_num in data['Player_'].drop_duplicates():
+        if player_num not in num_to_ind:
+            num_to_ind[player_num] = len(num_to_ind)
     data.insert(5,'Player_Index',[num_to_ind[num] for num in data.Player_])
     n_players = len(num_to_ind)
     data.Time = data.Time.values/100 * 60 + data.Time.values%100
-    data = data[['Cat','Year','Round','Permanent_Tournament_','Course_','Hole','Started_at_X','Started_at_Y','Distance_from_hole','Strokes_Gained','Time','Player_Index','Par_Value']]
-    gc.collect()
     
-    data = pd.concat([data[(data.Year==year) & (data.Permanent_Tournament_==tourn)] for year,tourn in tourn_order])
-    tups = data.drop_duplicates(['Year','Permanent_Tournament_'])[['Year','Permanent_Tournament_']].values.tolist()
-    tournament_groups = {tuple(tup):u/4 for u,tup in enumerate(tups)}
-    data.insert(len(data.columns),'Tournament_Group',[tournament_groups[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values.tolist()])
-    n_tournament_groups = len(pd.unique(data.Tournament_Group))
+    tourns_in_data = data[['Year','Permanent_Tournament_']].drop_duplicates.values.tolist()
+    tourns_in_data = set(tuple(tup) for tup in tourns_in_data)
+    tourn_order = [tup for tup in tourn_order if tuple(tup) in tourns_in_data]
+    tourn_seq = {tuple(tup):u for u,tup in enumerate(tourn_order)}
+    data['tourn_num'] = [tourn_seq[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values]
+    n_tournaments = len(tourn_seq)
 
     num_cores = multiprocessing.cpu_count()-3
-    slices = partition(range(n_tournament_groups),num_cores)
+    slices = partition(range(n_tournaments),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
     pool.close()
