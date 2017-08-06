@@ -12,3 +12,5 @@ old scripts (Rank a golfer)
 not_to_track
 *.json
 *.txt
+*.model
+lbs
