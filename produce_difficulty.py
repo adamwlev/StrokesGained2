@@ -33,7 +33,6 @@ def doit(data,cat,full=False):
         delta_map = {'Green':.5,'Fairway':.75,'Intermediate Rough':.8,'Primary Rough':.85,
                      'Fringe':1.0,'Bunker':.9,'Other':1.3}
         le = LabelEncoder()
-
         results = {}
         print cat
         data_ = data[data.Cat==cat]
@@ -146,7 +145,7 @@ def doit(data,cat,full=False):
         X_ = bmat([[lbs[col if isinstance(col,str) else tuple(col)].transform(vec)
                     for col,vec in zip(cols,to_encode)]],format='csc')
         X = bmat([[X,X_]],format='csc')
-        for fold in range(15):
+        for fold in range(12):
             bst = xgb.Booster(model_file='bst%d.model' % (fold,))
             dmat = xgb.DMatrix(X)
             predictions = bst.predict(dmat)

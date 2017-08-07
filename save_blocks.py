@@ -8,8 +8,11 @@ from collections import defaultdict
 cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate',
         'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
 data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2018)])
+len_before = len(data)
+data = data.dropna(subset=['Strokes_Gained'])
+print 'Dropped %d shots for missing strokes gained.' % (len_before-len(data),)
 
-e_d,e_t,w_d,p_mult = .8,.7,.8,1.3
+e_d,e_t,w_d,p_mult = .8,.7,.8,1.9
 
 cats = {}
 cats['green0'] = 'Cat=="Green" & Distance_from_hole<5'
@@ -150,8 +153,8 @@ tourn_seq = {tuple(tup):u for u,tup in enumerate(tourn_order)}
 data['tourn_num'] = [tourn_seq[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values]
 n_tournaments = len(tourn_seq)
 
-num_cores = multiprocessing.cpu_count()-2
-num_cores = 2
+#num_cores = multiprocessing.cpu_count()-2
+num_cores = 3
 slices = partition(range(n_tournaments),num_cores)
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(run_a_slice, slices)
