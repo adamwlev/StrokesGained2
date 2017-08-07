@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import sys
+import sys, pickle
 
 if __name__=="__main__":
 	cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
@@ -63,7 +63,7 @@ if __name__=="__main__":
 		data['baby_cat'] = [cat_map[i] for i in cat_dummies.argmax(1)]
 		data = data.rename(columns={col.replace('#',''):col for col in cols_with_hashtags})
 		data = data.drop([col for col in data.columns if col.startswith('Unnamed')],axis=1)
-		data.insert(len(data.columns),'Player_Index',[num_to_ind[num] for num in data['Player_#']])
+		data['Player_Index'] = [num_to_ind[num] for num in data['Player_#']]
 		data['skill_estimate'] = [ratings[baby_cat][player_ind,tourn_num-1]
 		                          if tourn_num>0 else np.nan
 		                          for baby_cat,player_ind,tourn_num in zip(data['baby_cat'],
@@ -74,6 +74,6 @@ if __name__=="__main__":
 		                             for baby_cat,player_ind,tourn_num in zip(data['baby_cat'],
 		                                                                      data['Player_Index'],
 		                                                                      data['tourn_num'])]
-		data.to_csv('data/%d.csv' % (year,))
+		data.sort_values('tourn_num').to_csv('data/%d.csv' % (year,), index=False)
 
 	
