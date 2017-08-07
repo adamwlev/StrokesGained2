@@ -44,8 +44,8 @@ def get_bins(data,n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
   for (course,hole,cluster),df in data.groupby(['Course_#','Hole','Cluster']):
       if df.shape[0]>1:
           angles_, dists_, _ = standardize(df,False)
-          angles = np.concatenate([angles,angles_[(df.Shot!=1).values]])
-          distances = np.concatenate([distances,dists_[~(df.last_shot_mask).values]])
+          angles = np.concatenate([angles,angles_[(~df.from_the_tee_box_mask).values]])
+          distances = np.concatenate([distances,dists_[(~df.last_shot_mask).values]])
   _, angle_bins = pd.qcut(angles,np.linspace(0,1,n_angle_bins),retbins=True)
   angle_bins[0], angle_bins[-1] = 0, 360
   _, dist_bins = pd.qcut(distances,np.linspace(0,1,n_dist_bins),retbins=True)
@@ -87,20 +87,31 @@ def addlocStrings(data,n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_ho
     data['loc_string_hole'] = [locStrings_holes[tuple(tup)] for tup in data[hole_id_cols].values]
     return data
 
-def doit(year,dist_bins,angle_bins,dist_bins_hole,angle_bins_hole):
-    data = pd.read_csv('data/%d.csv' % year)
-    shot_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Player_#','Shot','Year']
-    hole_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Year']
-    locStrings_shots,locStrings_holes = {},{}
-    for (course,hole,cluster),df in data.groupby(['Course_#','Hole','Cluster']):
-        angles, dists, hole_locs = standardize(df,True,dist_bins,angle_bins,
-                                               dist_bins_hole,angle_bins_hole)
-        locStrings_shots.update({tuple(tup):'%d-%d-%d-%d' % (tup[1],tup[3],angle,dist) 
-                                 for tup,angle,dist in zip(df[shot_id_cols].values,angles,dists)})
-        locStrings_holes.update({tuple(tup):'%d-%d-%d-%d' % (tup[1],tup[3],
-                                                             hole_locs[(tup[-1],tup[0],tup[2])][0],
-                                                             hole_locs[(tup[-1],tup[0],tup[2])][1])
-                                 for tup in df[hole_id_cols].values})
-    data['loc_string'] = [locStrings_shots[tuple(tup)] for tup in data[shot_id_cols].values]
-    data['loc_string_hole'] = [locStrings_holes[tuple(tup)] for tup in data[hole_id_cols].values]
-    data.to_csv('data/%d.csv' % year, index=False)
+def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
+    cols = ['Course_#','Hole','Cluster','Cluster_Green_X','Cluster_Green_Y','from_the_tee_box_mask',
+            'Cluster_Tee_Y','Cluster_Tee_X','Start_X_Coordinate','Start_Y_Coordinate','last_shot_mask',
+            'End_Y_Coordinate','End_X_Coordinate','Permanent_Tournament_#','Round','Year']
+    data = pd.concat([pd.read_csv('data/%d.csv' % year, usecols=cols)
+                      for year in range(2003,2018)])
+    dist_bins,angle_bins,dist_bins_hole,angle_bins_hole = get_bins(data,n_dist_bins,
+                                                                   n_angle_bins,n_dist_bins_hole,
+                                                                   n_angle_bins_hole)
+    data = None
+    gc.collect()
+    for year in range(2003,2018):
+        data = pd.read_csv('data/%d.csv' % year)
+        shot_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Player_#','Shot','Year']
+        hole_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Year']
+        locStrings_shots,locStrings_holes = {},{}
+        for (course,hole,cluster),df in data.groupby(['Course_#','Hole','Cluster']):
+            angles, dists, hole_locs = standardize(df,True,dist_bins,angle_bins,
+                                                   dist_bins_hole,angle_bins_hole)
+            locStrings_shots.update({tuple(tup):'%d-%d-%d-%d' % (tup[1],tup[3],angle,dist) 
+                                     for tup,angle,dist in zip(df[shot_id_cols].values,angles,dists)})
+            locStrings_holes.update({tuple(tup):'%d-%d-%d-%d' % (tup[1],tup[3],
+                                                                 hole_locs[(tup[-1],tup[0],tup[2])][0],
+                                                                 hole_locs[(tup[-1],tup[0],tup[2])][1])
+                                     for tup in df[hole_id_cols].values})
+        data['loc_string'] = [locStrings_shots[tuple(tup)] for tup in data[shot_id_cols].values]
+        data['loc_string_hole'] = [locStrings_holes[tuple(tup)] for tup in data[hole_id_cols].values]
+        data.to_csv('data/%d.csv' % year, index=False)

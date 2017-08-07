@@ -45,15 +45,15 @@ if __name__=="__main__":
             range_tournament_group = range(min_tournament_group,max_tournament_group)
             A = bmat([[
                        bmat([[reduce(lambda x,y: x+y, [load_sparse_csc(fn % (i)) 
-                                                       for i in range(row_ind*block_size,(row_ind+1)*block_size)])\
-                              *my_norm(abs(row_ind-col_ind),beta)]
+                                                       for i in range(row_ind*block_size,(row_ind+1)*block_size)
+                                                       if i<num_tournaments])*my_norm(abs(row_ind-col_ind),beta)]
                               for col_ind in range_tournament_group],format='csc')
                        for row_ind in range_tournament_group
                      ]],format='csc')
             G = bmat([[
                        bmat([[reduce(lambda x,y: x+y, [load_sparse_csc(fn_g % (i)) 
-                                                       for i in range(row_ind*block_size,(row_ind+1)*block_size)])\
-                              *my_norm(abs(row_ind-col_ind),beta)]
+                                                       for i in range(row_ind*block_size,(row_ind+1)*block_size)
+                                                       if i<num_tournaments])*my_norm(abs(row_ind-col_ind),beta)]
                               for col_ind in range_tournament_group],format='csc')
                        for row_ind in range_tournament_group
                      ]],format='csc')
@@ -94,7 +94,7 @@ if __name__=="__main__":
     block_size, window_size = map(int,[block_size,window_size])
     files = os.listdir('cats/cats_w-%s-%s-%s' % (e_d,e_t,w_d))
     num_tournaments = max(int(fn.split('_')[-1].split('.')[0]) 
-                          for fn in files if '_' in fn and 'g.npz' not in fn)
+                          for fn in files if '_' in fn and 'g.npz' not in fn) + 1
     fn = 'cats/cats_w-%s-%s-%s/%s_' % (e_d,e_t,w_d,cat,) + '%d.npz'
     fn_g = 'cats/cats_w-%s-%s-%s/%s_' % (e_d,e_t,w_d,cat,) + '%d_g.npz'
     num_players = load_sparse_csc(fn % (0,)).shape[0]

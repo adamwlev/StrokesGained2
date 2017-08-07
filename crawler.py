@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, gc
 
 if __name__=="__main__":
 	e_d = '0.8'
@@ -13,3 +13,4 @@ if __name__=="__main__":
 		
 	for cat in cats:
 		subprocess.call(["python","produce_skill_estimates.py" ,cat,e_d,e_t,w_d,alpha,beta,block_size,window_size])
+		gc.collect()
