@@ -24,7 +24,6 @@ def doit():
 	gc.collect()
 	for year in range(2003,2018):
 		data = pd.read_csv('data/%d.csv' % year)
-		data['Cluster'] = [0]*len(data)
 		data['Cluster'] = [results[tuple(tup)][0]
 		                   if tuple(tup) in results else 0
 		                   for tup in data[['Course_#','Hole','Year','Round']].values]

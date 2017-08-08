@@ -5,7 +5,7 @@ from scipy.spatial.distance import pdist,squareform
 import math,os,sys,multiprocessing,gc,pickle,itertools
 from collections import defaultdict
     
-cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate',
+cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate','tourn_num',
         'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
 data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2018)])
 len_before = len(data)
@@ -123,14 +123,6 @@ if not os.path.exists('cats/cats_w-%s-%s-%s' % (e_d,e_t,w_d)):
     os.makedirs('cats/cats_w-%s-%s-%s' % (e_d,e_t,w_d))
 e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
 
-cols = ('Year','Permanent_Tournament_#')
-rawdata = pd.concat([pd.read_csv('data/rawdata/hole/%d.txt' % year, sep=';', 
-                                 usecols=lambda x: x.strip().replace(' ','_') in cols)
-                     for year in range(2003,2018)])
-tourn_order = rawdata.drop_duplicates().values.tolist()
-
-data.columns = [col.replace('#','') for col in data.columns]
-
 with open('PickleFiles/num_to_ind_shot.pkl','rb') as pickle_file:
     num_to_ind = pickle.load(pickle_file)
 
@@ -146,12 +138,7 @@ n_players = len(num_to_ind)
 print n_players
 data.Time = data.Time.values/100 * 60 + data.Time.values%100
 
-tourns_in_data = data[['Year','Permanent_Tournament_']].drop_duplicates().values.tolist()
-tourns_in_data = set(tuple(tup) for tup in tourns_in_data)
-tourn_order = [tup for tup in tourn_order if tuple(tup) in tourns_in_data]
-tourn_seq = {tuple(tup):u for u,tup in enumerate(tourn_order)}
-data['tourn_num'] = [tourn_seq[tuple(tup)] for tup in data[['Year','Permanent_Tournament_']].values]
-n_tournaments = len(tourn_seq)
+n_tournaments = len(pd.unique(data.tourn_num))
 
 #num_cores = multiprocessing.cpu_count()-2
 num_cores = 3
