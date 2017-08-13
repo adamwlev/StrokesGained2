@@ -80,6 +80,7 @@ def doit(data):
     
     print 'Replacing %d nulls with mean.' % len(data[(data.Cat!='Green') & (data.Green_to_work_with.isnull())])
     data.loc[(data.Cat!='Green') & data.Green_to_work_with.isnull(),'Green_to_work_with'] = 36.5
+    data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
 
     return data
 
