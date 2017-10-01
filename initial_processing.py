@@ -198,6 +198,9 @@ def doit(data):
 
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
     z_of_hole = data[data.last_shot_mask].groupby(id_cols)['End_Z_Coordinate'].max().to_dict()
-    data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)] for tup in data[id_cols].values])
+    data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)]
+                                                                        if tuple(tup) in z_of_hole else np.nan
+                                                                        for tup in data[id_cols].values])
+    print 'Number of nulls for Z_Coordinate: %d' % (data.Start_Z_Coordinate.isnull().sum(),)
 
     return data

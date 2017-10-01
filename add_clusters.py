@@ -37,6 +37,7 @@ def doit():
 		data = data[data.Cluster_Green_X!=0]
 		print 'dropping %d singleton shots' % (len_before-len(data),)
 		data.to_csv('data/%d.csv' % year, index=False)
+		data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
 		data = None
 		gc.collect()
 
@@ -55,5 +56,6 @@ def doit():
 		data['Cluster_Tee_X'] = [cluster_tee_box_dict[tuple(tup)][0] for tup in data[['Course_#','Hole','Cluster']].values]
 		data['Cluster_Tee_Y'] = [cluster_tee_box_dict[tuple(tup)][1] for tup in data[['Course_#','Hole','Cluster']].values]
 		data.to_csv('data/%d.csv' % year, index=False)
+		data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
 		data = None
 		gc.collect()

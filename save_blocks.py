@@ -69,7 +69,7 @@ def run_a_slice(slice):
 
     def get_matrix(tournament,conditon,sig_p):
         arr,arr1 = np.zeros((n_players,n_players)),np.zeros((n_players,n_players))
-        for (round,course,hole),df in data[data.tourn_num==tournament].groupby(['Round','Course_','Hole']):
+        for (round,course,hole),df in data[data.tourn_num==tournament].groupby(['Round','Course_#','Hole']):
             subset = df.query(condition)[['Start_X_Coordinate','Start_Y_Coordinate','Distance_from_hole',
                                           'Strokes_Gained','Time','Player_Index']].values
             num_shots = subset.shape[0]
@@ -97,8 +97,8 @@ def run_a_slice(slice):
         print tournament
         #tournament += run_a_slice.base_number_tournaments ## for incremental
         for big_cat in meta_cats:
-            if os.path.exists('cats/cats_w-%g-%g-%g/%s_%d.npz' % (e_d,e_t,w_d,big_cat,tournament)):
-                continue
+            # if os.path.exists('cats/cats_w-%g-%g-%g/%s_%d.npz' % (e_d,e_t,w_d,big_cat,tournament)):
+            #     continue
             mat,mat1 = None,None
             for small_cat in meta_cats[big_cat]:
                 sig_p = p_map[small_cat]
@@ -126,14 +126,14 @@ e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
 with open('PickleFiles/num_to_ind_shot.pkl','rb') as pickle_file:
     num_to_ind = pickle.load(pickle_file)
 
-for player_num in data['Player_'].drop_duplicates():
+for player_num in data['Player_#'].drop_duplicates():
     if player_num not in num_to_ind:
         num_to_ind[player_num] = len(num_to_ind)
 
 with open('PickleFiles/num_to_ind_shot.pkl','wb') as pickle_file:
     pickle.dump(num_to_ind,pickle_file)
 
-data.insert(5,'Player_Index',[num_to_ind[num] for num in data.Player_])
+data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
 n_players = len(num_to_ind)
 print n_players
 data.Time = data.Time.values/100 * 60 + data.Time.values%100

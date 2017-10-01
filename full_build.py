@@ -12,23 +12,26 @@ def doit(years,fit_model=False):
     #   data = p1(data)
     #   data = p2(data)
     #   data.to_csv('data/%d.csv' % year, index=False)
+    data = pd.concat([pd.read_csv('data/%d.csv' % year, 
+                                  usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
+                                           'Start_X_Coordinate','End_X_Coordinate',
+                                           'Start_Y_Coordinate','End_Y_Coordinate',
+                                           'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
+                                           'Strokes_from_starting_location','Cat','Distance_from_hole',
+                                           'Green_to_work_with','Real_Shots','from_the_tee_box_mask'])
+                      for year in years])
+
     cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
     shot_id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole','Player_#','Real_Shots']
+    
     results = {}
     for cat in cats:
-        data = pd.concat([pd.read_csv('data/%d.csv' % year, 
-                                      usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
-                                               'Start_X_Coordinate','End_X_Coordinate',
-                                               'Start_Y_Coordinate','End_Y_Coordinate',
-                                               'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
-                                               'Strokes_from_starting_location','Cat','Distance_from_hole',
-                                               'Green_to_work_with','Real_Shots','from_the_tee_box_mask'])
-                          for year in years])
-        results_ = p3(data,cat,full=fit_model)
+        print cat
+        results_ = p3(data[data.Cat==cat].copy(),cat,full=fit_model)
         results = {key:value for d in [results,results_] for key,value in d.iteritems()}
-        data = None
-        gc.collect()
+        # data = None
+        # gc.collect()
         print len(results)
     
     # data = data.drop(['Start_X_Coordinate','End_X_Coordinate',
@@ -56,4 +59,5 @@ def doit(years,fit_model=False):
     #   cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate',
     #           'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
     #   data = p4(data[cols])
-        data.to_csv('data/%d.csv' % (year,))
+        data.to_csv('data/%d.csv' % (year,),index=False)
+        data.to_csv('data/%d.csv.gz' % (year,),index=False,compression='gzip')

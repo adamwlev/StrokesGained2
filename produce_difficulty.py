@@ -7,7 +7,6 @@ import xgboost as xgb
 import gc, dill
 
 def doit(data,cat,full=False):
-    data = data[data.Cat==cat]
     gc.collect()
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
     shot_id_cols = id_cols + ['Player_#','Real_Shots']
@@ -122,7 +121,7 @@ def doit(data,cat,full=False):
             test_error = np.mean(np.abs(predictions-y[test]))
             print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
             results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
-            bst.save_model('bst%d-%s.model' % (u,cat))
+            bst.save_model('difficulty_evalutation_models/bst%d-%s.model' % (u,cat))
 
     else:
         results = {}
@@ -135,6 +134,7 @@ def doit(data,cat,full=False):
         X = data_[cols].values.astype(float)
         X = csc_matrix(X)
         cols = ['Course_#',['Course_#','Year'],['Course_#','Year','Round'],['Course_#','Hole']]
+        to_encode = []
         for col in cols:
             lb = LabelBinarizer(sparse_output=True)
             if isinstance(col,str):
@@ -146,7 +146,7 @@ def doit(data,cat,full=False):
                     for col,vec in zip(cols,to_encode)]],format='csc')
         X = bmat([[X,X_]],format='csc')
         for fold in range(12):
-            bst = xgb.Booster(model_file='bst%d.model' % (fold,))
+            bst = xgb.Booster(model_file='difficulty_evalutation_models/bst%d-%s.model' % (fold,cat))
             dmat = xgb.DMatrix(X)
             predictions = bst.predict(dmat)
             for tup,pred in zip(data_[shot_id_cols].values,predictions):
