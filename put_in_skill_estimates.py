@@ -62,7 +62,7 @@ if __name__=="__main__":
         assert (cat_dummies.sum(1)==1).mean()==1
         cat_map = {u:cat for u,cat in enumerate(cats)}
         data['baby_cat'] = [cat_map[i] for i in cat_dummies.argmax(1)]
-        #data = data.rename(columns={col.replace('#',''):col for col in cols_with_hashtags})
+        data = data.rename(columns={col.replace('#',''):col for col in cols_with_hashtags})
         data = data.drop([col for col in data.columns if col.startswith('Unnamed')],axis=1)
         data['Player_Index'] = [num_to_ind[num] for num in data['Player_#']]
         data['skill_estimate'] = [ratings[baby_cat][player_ind,tourn_num-1]
@@ -87,4 +87,5 @@ if __name__=="__main__":
                                                                                       data['Player_Index'],
                                                                                       data['tourn_num'])]
         data.sort_values('tourn_num').to_csv('data/%d.csv' % (year,), index=False)
+        data.sort_values('tourn_num').to_csv('data/%d.csv.gz' % (year,), compression='gzip', index=False)
 

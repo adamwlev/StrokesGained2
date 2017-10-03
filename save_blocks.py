@@ -6,7 +6,8 @@ import math,os,sys,multiprocessing,gc,pickle,itertools
 from collections import defaultdict
     
 cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate','tourn_num',
-        'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
+        'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#',
+        'Player_Last_Name','Player_First_Name')
 data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2018)])
 len_before = len(data)
 data = data.dropna(subset=['Strokes_Gained'])
@@ -134,6 +135,26 @@ with open('PickleFiles/num_to_ind_shot.pkl','wb') as pickle_file:
     pickle.dump(num_to_ind,pickle_file)
 
 data.insert(5,'Player_Index',[num_to_ind[num] for num in data['Player_#']])
+name_to_ind = {}
+for tup in data[['Player_Last_Name','Player_First_Name','Player_Index']].values:
+    if tuple(tup[0:2]) in name_to_ind:
+        if name_to_ind[tuple(tup[0:2])]!=tup[2]:
+            for counter in range(10):
+                key = tuple([tup[0],tup[1]+''.join(['*' for _ in range(counter)])])
+                if key in name_to_ind and name_to_ind[key]==tup[2]:
+                    break
+            else:
+                for counter in range(10):
+                    key = tuple([tup[0],tup[1]+''.join(['*' for _ in range(counter)])])
+                    if key not in name_to_ind:
+                        break
+                print tuple(tup[0:2]),'is duped, inserting', key
+                print name_to_ind[tuple(tup[0:2])],tup[2]
+                name_to_ind[key] = tup[2]
+    else:
+        name_to_ind[tuple(tup[0:2])] = tup[2]
+with open('PickleFiles/name_to_ind_shot.pkl','wb') as pickle_file:
+    pickle.dump(name_to_ind,pickle_file)
 n_players = len(num_to_ind)
 print n_players
 data.Time = data.Time.values/100 * 60 + data.Time.values%100

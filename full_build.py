@@ -7,11 +7,11 @@ from produce_difficulty import doit as p3
 import gc
 
 def doit(years,fit_model=False):
-    # for year in years:
-    #   data = pd.read_csv('data/rawdata/hole/%d.txt' % year,sep=';')
-    #   data = p1(data)
-    #   data = p2(data)
-    #   data.to_csv('data/%d.csv' % year, index=False)
+    for year in years:
+        data = pd.read_csv('data/rawdata/hole/%d.txt' % year,sep=';')
+        data = p1(data)
+        data = p2(data)
+        data.to_csv('data/%d.csv' % year, index=False)
     data = pd.concat([pd.read_csv('data/%d.csv' % year, 
                                   usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
                                            'Start_X_Coordinate','End_X_Coordinate',

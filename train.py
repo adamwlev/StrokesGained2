@@ -10,7 +10,7 @@ cols = ['tourn_num','skill_estimate_percentile','not_seen','observation_count_pe
         'Player_First_Name','Player_Last_Name','Cat','Distance_from_hole','Green_to_work_with',
         'from_the_tee_box_mask','Strokes_from_starting_location','Course_#','Hole','loc_string',
         'loc_string_hole']#,'Start_Z_Coordinate','windSpeed','temperature'
-data = pd.concat([pd.read_csv('../data/%d.csv.gz' % year,usecols=cols) for year in range(2003,2018)])
+data = pd.concat([pd.read_csv('data/%d.csv.gz' % year,usecols=cols) for year in range(2003,2018)])
 
 data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
 data = data.drop('from_the_tee_box_mask',axis=1)
@@ -38,7 +38,7 @@ def find_num_trees(X,y,params,eval_pct,course_strings,course_hole_strings,loc_st
     early_stopping_rounds = 25
     num_round = 10000
     num_train = int(X.shape[0]*(1-eval_pct))
-    X_train, y_train, X_test, y_test = (csc_matrix(X[:num_train]), y[:num_train]
+    X_train, y_train, X_test, y_test = (csc_matrix(X[:num_train]), y[:num_train],
                                         csc_matrix(X[num_train:]), y[num_train:])
     X_train = bmat([[X_train,lbs['course'].fit_transform(course_strings[:num_train]),
                      lbs['course_hole'].fit_transform(course_hole_strings[:num_train]),
@@ -56,15 +56,17 @@ def find_num_trees(X,y,params,eval_pct,course_strings,course_hole_strings,loc_st
                     early_stopping_rounds=early_stopping_rounds,verbose_eval=False) 
     return bst.best_iteration
 
-cats = ['Green','Fairway','Rough','Other','Bunker','Tee']
+cats = ['Green','Fairway','Rough','Other','Bunker','Tee Box']
 cat_map = {'Green':set(['Green']),'Fairway':set(['Fringe','Fairway']),'Bunker':set(['Bunker']),
-           'Rough':set(['Primary Rough','Intermediate Rough']),'Other':set(['Other']),'Tee':set(['Tee'])}
+           'Rough':set(['Primary Rough','Intermediate Rough']),'Other':set(['Other']),'Tee Box':set(['Tee Box'])}
+delta_map = {'Green':.6,'Fairway':.9,'Rough':1.05,'Other':1.5,'Bunker':1.05,'Tee Box':1.25}
 for cat in cats:
     cols = ['Distance_from_hole','skill_estimate_percentile','not_seen',
             'observation_count_percentile']#,'Start_Z_Coordinate','windSpeed','temperature'
     if cat!='Green':
         cols.append('Green_to_work_with')
-    sub = data[data.Cat.isin(cat_map[cat])].reset_index(drop=True)
+    psuedo_huber.delta = delta_map[cat]
+    sub = data[data.Cat.isin(cat_map[cat])]
     X = sub[cols].values
     course_strings = np.array(['%d' % (num,) for num in sub['Course_#']])
     course_hole_strings = np.array(['%d-%d' % (tup[0],tup[1])
@@ -78,7 +80,7 @@ for cat in cats:
     params = {'objective':'reg:linear','min_child_weight':4,'eval_metric':'mae',
               'subsample':.75,'tree_method':'approx','silent':0,
               'eta':.007,'lambda':20,'max_depth':12}
-    num_trees = find_num_trees(X,y,params,.22)
+    num_trees = find_num_trees(X,y,params,.22,course_strings,course_hole_strings,loc_strings,loc_strings_hole,lbs)
     print cat,num_trees
     X = csc_matrix(X)
     X = bmat([[X,lbs['course'].fit_transform(course_strings),
@@ -88,5 +90,5 @@ for cat in cats:
     with open('lbs/F-lbs-%s.pkl' % (cat,), 'wb') as pickle_file:
         dill.dump(lbs, pickle_file)
     dmat = xgb.DMatrix(X,label=y)
-    bst = xgb.train(params,dtrain,num_trees,obj=psuedo_huber)
-    bst.save_model('difficulty_prediction_models/F-%s.model' % (u,cat))
+    bst = xgb.train(params,dmat,num_trees,obj=psuedo_huber)
+    bst.save_model('difficulty_prediction_models/F-%s.model' % (cat,))

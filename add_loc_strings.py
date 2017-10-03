@@ -96,6 +96,10 @@ def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
     dist_bins,angle_bins,dist_bins_hole,angle_bins_hole = get_bins(data,n_dist_bins,
                                                                    n_angle_bins,n_dist_bins_hole,
                                                                    n_angle_bins_hole)
+    np.save('latest_bins/dist_bins.npy',dist_bins)
+    np.save('latest_bins/angle_bins.npy',angle_bins)
+    np.save('latest_bins/dist_bins_hole.npy',dist_bins_hole)
+    np.save('latest_bins/angle_bins_hole.npy',angle_bins_hole)
     data = None
     gc.collect()
     for year in range(2003,2018):
@@ -115,3 +119,4 @@ def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
         data['loc_string'] = [locStrings_shots[tuple(tup)] for tup in data[shot_id_cols].values]
         data['loc_string_hole'] = [locStrings_holes[tuple(tup)] for tup in data[hole_id_cols].values]
         data.to_csv('data/%d.csv' % year, index=False)
+        data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
