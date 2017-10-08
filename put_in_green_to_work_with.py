@@ -40,7 +40,7 @@ def doit(data,slack):
                                    (hole_locs[tuple(tup[:-2])][1] - tup[-1])**2)**.5
                                   for tup in data[cols].values]
     data['Cat'] = [convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)]
-    data.insert(len(data.columns),'Green_to_work_with_%d' % (slack,),[np.nan]*len(data))
+    data['Green_to_work_with'] = [np.nan]*len(data)
     grouped = data.groupby(['Course_#','Round','Hole'])
     print len(grouped)
     for i,((course,round,hole),df) in enumerate(grouped):
@@ -59,27 +59,28 @@ def doit(data,slack):
         for u,(x,y) in enumerate(zip(non_green.Start_X_Coordinate,non_green.Start_Y_Coordinate)):
             angle = atan2(y,x)
             #slack = 23
-            sub = get_sub(green,angle,radians(slack))
+            slack_ = slack
+            sub = get_sub(green,angle,radians(slack_))
             c = 0
             # if len(sub)==0:
             #     print green.angle.sort_values().values
             while len(sub)==0:
                 #print u,c,len(green),x,y,angle,slack,radians(slack)
                 c += 1
-                slack += .5
+                slack_ += .5
                 if c==134:
                     break
-                sub = get_sub(green,angle,radians(slack))
+                sub = get_sub(green,angle,radians(slack_))
             if c==134:
                 work_with.append(np.nan)
             else:
                 work_with.append(sub.Distance_from_hole.max())
         #assert np.all(data[(data['Course_#']==course) & (data.Round==round) & (data.Hole==hole) & (data.Cat!='Green')].index==non_green.index)
-        data.loc[non_green.index,'Green_to_work_with_%d' % (slack,)] = work_with
+        data.loc[non_green.index,'Green_to_work_with'] = work_with
         #print work_with
     
-    print 'Replacing %d nulls with mean.' % len(data[(data.Cat!='Green') & (data['Green_to_work_with_%d' % (slack,)].isnull())])
-    data.loc[(data.Cat!='Green') & data['Green_to_work_with_%d' % (slack,)].isnull(),'Green_to_work_with_%d' % (slack,)] = 36.5
+    print 'Replacing %d nulls with mean.' % len(data[(data.Cat!='Green') & (data['Green_to_work_with'].isnull())])
+    data.loc[(data.Cat!='Green') & (data['Green_to_work_with'].isnull()),'Green_to_work_with'] = data.Green_to_work_with.mean()
     data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
 
     return data
