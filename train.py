@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelBinarizer
 cols = ['tourn_num','skill_estimate_percentile','not_seen','observation_count_percentile',
         'Player_First_Name','Player_Last_Name','Cat','Distance_from_hole','Green_to_work_with',
         'from_the_tee_box_mask','Strokes_from_starting_location','Course_#','Hole','loc_string',
-        'loc_string_hole']#,'Start_Z_Coordinate','windSpeed','temperature'
+        'loc_string_hole','Player_#']#,'Start_Z_Coordinate','windSpeed','temperature'
 data = pd.concat([pd.read_csv('data/%d.csv.gz' % year,usecols=cols) for year in range(2003,2018)])
 
 data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
@@ -73,20 +73,24 @@ for cat in cats:
                                     for tup in sub[['Course_#','Hole']].values])
     loc_strings = sub.loc_string.values
     loc_strings_hole = sub.loc_string_hole.values
+    player_strings = sub['Player_#'].astype(str).values
     lbs = {}
     lbs['course'],lbs['course_hole'] = LabelBinarizer(sparse_output=True),LabelBinarizer(sparse_output=True)
     lbs['loc_string'],lbs['loc_string_hole'] = LabelBinarizer(sparse_output=True),LabelBinarizer(sparse_output=True)
+    lbs['player'] = LabelBinarizer(sparse_output=True)
     y = sub.Strokes_from_starting_location.values
     params = {'objective':'reg:linear','min_child_weight':4,'eval_metric':'mae',
               'subsample':.75,'tree_method':'approx','silent':0,
-              'eta':.007,'lambda':20,'max_depth':12}
+              'eta':.007,'lambda':20,'max_depth':13}
     num_trees = find_num_trees(X,y,params,.22,course_strings,course_hole_strings,loc_strings,loc_strings_hole,lbs)
     print cat,num_trees
     X = csc_matrix(X)
     X = bmat([[X,lbs['course'].fit_transform(course_strings),
                lbs['course_hole'].fit_transform(course_hole_strings),
                lbs['loc_string'].fit_transform(loc_strings),
-               lbs['loc_string_hole'].fit_transform(loc_strings_hole)]],format='csc')
+               lbs['loc_string_hole'].fit_transform(loc_strings_hole),
+               lbs['player'].fit_transform(player_strings)]],format='csc')
+    print X.shape
     with open('lbs/F-lbs-%s.pkl' % (cat,), 'wb') as pickle_file:
         dill.dump(lbs, pickle_file)
     dmat = xgb.DMatrix(X,label=y)
