@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-import sys, pickle
+import sys, json
 
 def main(beta):
 	cols = ['Player_#','Hole_Score','Par_Value','Course_#','Permanent_Tournament_#','Year','Hole','Round']
@@ -42,8 +42,9 @@ def main(beta):
 	            sub = df.loc[(df.tourn_num<tourn_num) & (df.Par_Value==par_value),['tourn_num','SG']]
 	            results[(player,perm_tourn_num,year,par_value)] = (normalized_performace(tourn_num,sub),
 	                                                               number_observations(tourn_num,sub))
-	with open('PickleFiles/overall_player_quality_%d.pkl' % (int(beta),),'wb') as pickle_file:
-		pickle.dump(results,pickle_file)
+	results = {'%d-%d-%d-%d' % tuple(map(int,key)):tuple(map(float,value)) for key,value in results.iteritems()}
+	with open('PickleFiles/overall_player_quality_%d.json' % (int(beta),),'w') as json_file:
+		json_file.write(json.dumps(results))
 
 	# for player,df in data.groupby('Player_#'):
  #        tourn_num = len(tourn_num_dict)+1

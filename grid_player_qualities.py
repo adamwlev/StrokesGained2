@@ -11,7 +11,7 @@ def run_a_slice(betas):
 def partition (lst, n):
     return [lst[i::n] for i in xrange(n)]
 
-num_cores = 15
+num_cores = 8
 slices = partition(betas,num_cores)
 pool = multiprocessing.Pool(num_cores)
 results = pool.map(run_a_slice, slices)
