@@ -6,19 +6,23 @@ import itertools, gc, dill
 from datetime import datetime, timedelta
 from sklearn.preprocessing import LabelBinarizer
 
-cols = ['tourn_num','skill_estimate_percentile','not_seen','observation_count_percentile',
-        'Player_First_Name','Player_Last_Name','Cat','Distance_from_hole','Green_to_work_with',
+cats = ['tee3','tee45','green0','green5','green10','green20','rough0','rough90',
+        'rough375','fairway0','fairway300','fairway540','bunker','other']
+cat_cols = [c for cat in cats for c in ['skill_estimate_percentile_%s' % (cat,),'not_seen_%s' % (cat,),
+                                        'observation_count_percentile_%s' % (cat,)]]
+cols = ['tourn_num','Player_First_Name','Player_Last_Name','Cat','Distance_from_hole','Green_to_work_with',
         'from_the_tee_box_mask','Strokes_from_starting_location','Course_#','Hole','loc_string',
-        'loc_string_hole','Player_#']#,'Start_Z_Coordinate','windSpeed','temperature'
+        'loc_string_hole','Player_#']+cat_cols#,'Start_Z_Coordinate','windSpeed','temperature'
 data = pd.concat([pd.read_csv('data/%d.csv.gz' % year,usecols=cols) for year in range(2003,2018)])
 
 data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
 data = data.drop('from_the_tee_box_mask',axis=1)
 
-data.not_seen = data.not_seen.astype(float)
+for cat in cats:
+    data['not_seen_%s' % (cat,)] = data['not_seen_%s' % (cat,)].astype(float)
+    data['skill_estimate_percentile_%s' % (cat,)] = data['skill_estimate_percentile_%s' % (cat,)].fillna(.5)
+    data['observation_count_percentile_%s' % (cat,)] = data['observation_count_percentile_%s' % (cat,)].fillna(.5)
 data.Strokes_from_starting_location = data.Strokes_from_starting_location.astype(float)
-data.skill_estimate_percentile = data.skill_estimate_percentile.fillna(.5)
-data.observation_count_percentile = data.observation_count_percentile.fillna(.5)
 # data.Start_Z_Coordinate = data.Start_Z_Coordinate/data.Distance_from_hole
 # data.loc[data.Start_Z_Coordinate.abs()>1,'Start_Z_Coordinate'] = data.loc[data.Start_Z_Coordinate.abs()>1,
 #                                                                           'Start_Z_Coordinate']\
@@ -61,13 +65,12 @@ cat_map = {'Green':set(['Green']),'Fairway':set(['Fringe','Fairway']),'Bunker':s
            'Rough':set(['Primary Rough','Intermediate Rough']),'Other':set(['Other']),'Tee Box':set(['Tee Box'])}
 delta_map = {'Green':.6,'Fairway':.9,'Rough':1.05,'Other':1.5,'Bunker':1.05,'Tee Box':1.25}
 for cat in cats:
-    cols = ['Distance_from_hole','skill_estimate_percentile','not_seen',
-            'observation_count_percentile']#,'Start_Z_Coordinate','windSpeed','temperature'
+    cols = ['Distance_from_hole']+cat_cols#,'Start_Z_Coordinate','windSpeed','temperature'
     if cat!='Green':
         cols.append('Green_to_work_with')
     psuedo_huber.delta = delta_map[cat]
     sub = data[data.Cat.isin(cat_map[cat])]
-    X = sub[cols].values
+    X = sub[cols].values.astype(np.float64)
     course_strings = np.array(['%d' % (num,) for num in sub['Course_#']])
     course_hole_strings = np.array(['%d-%d' % (tup[0],tup[1])
                                     for tup in sub[['Course_#','Hole']].values])
