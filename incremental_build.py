@@ -4,8 +4,7 @@ from put_in_green_to_work_with import doit as p2
 from produce_difficulty import doit as p3
 
 def doit(years,year,path_to_new_file,path_to_old_file):
-	old_data = pd.read_csv(path_to_old_file,sep=';')
-	new_data = pd.read_csv(path_to_new_file,sep=';')
+	data = pd.read_csv(path_to_old_file,sep=';')
 
 	records_old = set([tuple(row) for row in old_data.values])
 	in_old_mask = np.array([tuple(row) in records_old for row in new_data.values])

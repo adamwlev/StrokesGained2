@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-#from initial_processing import doit as p1
-#from put_in_green_to_work_with import doit as p2
+from initial_processing import doit as p1
+from put_in_green_to_work_with import doit as p2
 from produce_difficulty import doit as p3
 #from add_skill_estimates import doit as p4
 import gc
@@ -10,7 +10,7 @@ def doit(years,fit_model=False):
     for year in years:
         data = pd.read_csv('data/rawdata/hole/%d.txt' % year,sep=';')
         data = p1(data)
-        data = p2(data)
+        data = p2(data,16)
         data.to_csv('data/%d.csv' % year, index=False)
     data = pd.concat([pd.read_csv('data/%d.csv' % year, 
                                   usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',

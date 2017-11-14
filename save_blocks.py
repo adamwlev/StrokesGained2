@@ -8,7 +8,7 @@ from collections import defaultdict
 cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate','tourn_num',
         'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#',
         'Player_Last_Name','Player_First_Name')
-data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2018)])
+data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2019)])
 len_before = len(data)
 data = data.dropna(subset=['Strokes_Gained'])
 print 'Dropped %d shots for missing strokes gained.' % (len_before-len(data),)

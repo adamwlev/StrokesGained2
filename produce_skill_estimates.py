@@ -99,7 +99,7 @@ if __name__=="__main__":
     fn_g = 'cats/cats_w-%s-%s-%s/%s_' % (e_d,e_t,w_d,cat,) + '%d_g.npz'
     num_players = load_sparse_csc(fn % (0,)).shape[0]
     
-    num_cores = 3
+    num_cores = 64
     slices = partition(range(num_tournaments),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
