@@ -8,7 +8,7 @@ import gc
 
 def doit(years,fit_model=False):
     for year in years:
-        data = pd.read_csv('data/rawdata/hole/%d.txt' % year,sep=';')
+        data = pd.read_csv('data/rawdata/shot/%d.txt' % year,sep=';')
         data = p1(data)
         data = p2(data,16)
         data.to_csv('data/%d.csv' % year, index=False)
