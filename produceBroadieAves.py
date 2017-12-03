@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
-import pickle
+import pickle, sys, multiprocessing
 from collections import defaultdict
-from scipy.stats import norm
-import sys
-import multiprocessing
+from scipy.stats import norm 
 
 if __name__=='__main__':
 
@@ -59,6 +57,8 @@ if __name__=='__main__':
     for year,ptn in data[['Year','Permanent_Tournament_#']].values:
         if (year,ptn) not in tourn_map:
             tourn_map[(year,ptn)] = len(tourn_map)
+    with open('PickleFiles/broadie_tourn_map.pkl','wb') as pickle_file:
+        pickle.dump(tourn_map,pickle_file)
     data['tourn_num'] = [tourn_map[(y,ptn)] for y,ptn in data[['Year','Permanent_Tournament_#']].values]
     print len(tourn_map)
     field_for_cat = data.groupby(['Year','Course_#','Round','Strokes_Gained_Category'])
