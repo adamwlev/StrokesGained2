@@ -30,14 +30,14 @@ def doit(data):
     ## filter out match play
     before = len(data)
     data = data[data['Permanent_Tournament_#']!=470]
-    print 'Dropped %d shots from matchplay.' % (before-len(data),)
+    print('Dropped %d shots from matchplay.' % (before-len(data),))
 
     ## filter out holes with conceded strokes
     before = len(data)
     holes_w_conceded_strokes = set(tuple(tup) for tup in data.loc[data['Shot_Type(S/P/D)']=='C',id_cols].values.tolist())
     holes_w_conceded_strokes = np.array([tuple(tup) in holes_w_conceded_strokes for tup in data[id_cols].values])
     data = data.iloc[~holes_w_conceded_strokes]
-    print 'Dropped %d shots from dropping all player-holes with conceded strokes.' % (before-len(data),)
+    print('Dropped %d shots from dropping all player-holes with conceded strokes.' % (before-len(data),))
 
     ## filter out holes with any Shot of Type = 'S', #_of_Strokes = 0
     before = len(data)
@@ -45,7 +45,7 @@ def doit(data):
                                                               (data['#_of_Strokes']==0),id_cols].values.tolist())
     holes_w_S_w_0strokes = np.array([tuple(tup) in holes_w_S_w_0strokes for tup in data[id_cols].values])
     data = data.iloc[~holes_w_S_w_0strokes]
-    print 'Dropped %d shots from dropping all player-holes with Shots of type S but #_of_Strokes=0.' % (before-len(data),)
+    print('Dropped %d shots from dropping all player-holes with Shots of type S but #_of_Strokes=0.' % (before-len(data),))
 
     data = data.rename(columns={'X_Coordinate':'End_X_Coordinate',
                                 'Y_Coordinate':'End_Y_Coordinate',
@@ -187,7 +187,7 @@ def doit(data):
                     (data.End_X_Coordinate!=0) & (data.End_Y_Coordinate!=0)
     before = len(data)
     data = data[non_zero_mask]
-    print 'Dropped %d shots from dropping shots with missing coordinates.' % (before-len(data),)
+    print('Dropped %d shots from dropping shots with missing coordinates.' % (before-len(data),))
 
     data['Stroke'] = data.groupby(id_cols)['Penalty_Shots'].cumsum() + data['Real_Shots']
     scores = data.groupby(id_cols)['Stroke'].max().to_dict()
@@ -201,6 +201,6 @@ def doit(data):
     data['Start_Z_Coordinate'] = data['Start_Z_Coordinate'] - np.array([z_of_hole[tuple(tup)]
                                                                         if tuple(tup) in z_of_hole else np.nan
                                                                         for tup in data[id_cols].values])
-    print 'Number of nulls for Z_Coordinate: %d' % (data.Start_Z_Coordinate.isnull().sum(),)
+    print('Number of nulls for Z_Coordinate: %d' % (data.Start_Z_Coordinate.isnull().sum(),))
 
     return data

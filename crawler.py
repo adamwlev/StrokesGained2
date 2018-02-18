@@ -24,7 +24,7 @@ if __name__=="__main__":
 	            'fairway300':'16',
 	            'tee3':'8'}
 
-	for cat in cats[-4:]:
-		subprocess.call(["python","produce_skill_estimates.py" ,cat,e_d,e_t,w_d,alpha,
+	for cat in cats[:-4] + ['other']:
+		subprocess.call(["python3","produce_skill_estimates.py" ,cat,e_d,e_t,w_d,alpha,
 						 beta_map[cat],block_size,window_size])
 		gc.collect()

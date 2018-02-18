@@ -55,7 +55,7 @@ def get_bins(data,n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
   for (course,hole,cluster),df in data.groupby(['Course_#','Hole','Cluster']):
       if df.shape[0]>1:
           _, _, hole_locs = standardize(df,False)
-          arr = np.array(hole_locs.values())
+          arr = np.array(list(hole_locs.values()))
           angles_, distances_ = arr[:,0],arr[:,1]
           angles = np.concatenate([angles,angles_])
           distances = np.concatenate([distances,distances_])
@@ -91,8 +91,8 @@ def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
     cols = ['Course_#','Hole','Cluster','Cluster_Green_X','Cluster_Green_Y','from_the_tee_box_mask',
             'Cluster_Tee_Y','Cluster_Tee_X','Start_X_Coordinate','Start_Y_Coordinate','last_shot_mask',
             'End_Y_Coordinate','End_X_Coordinate','Permanent_Tournament_#','Round','Year']
-    data = pd.concat([pd.read_csv('data/%d.csv' % year, usecols=cols)
-                      for year in range(2003,2018)])
+    data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year, usecols=cols)
+                      for year in range(2003,2019)])
     dist_bins,angle_bins,dist_bins_hole,angle_bins_hole = get_bins(data,n_dist_bins,
                                                                    n_angle_bins,n_dist_bins_hole,
                                                                    n_angle_bins_hole)
@@ -102,8 +102,8 @@ def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
     np.save('latest_bins/angle_bins_hole.npy',angle_bins_hole)
     data = None
     gc.collect()
-    for year in range(2003,2018):
-        data = pd.read_csv('data/%d.csv' % year)
+    for year in range(2003,2019):
+        data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % year)
         shot_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Player_#','Shot','Year']
         hole_id_cols = ['Permanent_Tournament_#','Course_#','Round','Hole','Year']
         locStrings_shots,locStrings_holes = {},{}
@@ -118,5 +118,4 @@ def doit(n_dist_bins,n_angle_bins,n_dist_bins_hole,n_angle_bins_hole):
                                      for tup in df[hole_id_cols].values})
         data['loc_string'] = [locStrings_shots[tuple(tup)] for tup in data[shot_id_cols].values]
         data['loc_string_hole'] = [locStrings_holes[tuple(tup)] for tup in data[hole_id_cols].values]
-        data.to_csv('data/%d.csv' % year, index=False)
-        data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
+        data.to_csv('../GolfData/Shot/%d.csv.gz' % year, compression='gzip', index=False)

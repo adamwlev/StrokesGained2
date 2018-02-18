@@ -42,10 +42,10 @@ def doit(data,slack):
     data['Cat'] = [convert_cats(c,d,s) for c,d,s in zip(data['From_Location(Scorer)'],data['Distance_from_hole'],data.Shot)]
     data['Green_to_work_with'] = [np.nan]*len(data)
     grouped = data.groupby(['Course_#','Round','Hole'])
-    print len(grouped)
+    print(len(grouped))
     for i,((course,round,hole),df) in enumerate(grouped):
         if i%300==0:
-            print i
+            print(i)
         df = df.copy()
         hole_x, hole_y = df[df.Strokes_from_starting_location==1].iloc[0][['End_X_Coordinate','End_Y_Coordinate']]
         df.Start_X_Coordinate = df.Start_X_Coordinate - hole_x
@@ -79,7 +79,7 @@ def doit(data,slack):
         data.loc[non_green.index,'Green_to_work_with'] = work_with
         #print work_with
     
-    print 'Replacing %d nulls with mean.' % len(data[(data.Cat!='Green') & (data['Green_to_work_with'].isnull())])
+    print('Replacing %d nulls with mean.' % len(data[(data.Cat!='Green') & (data['Green_to_work_with'].isnull())]))
     data.loc[(data.Cat!='Green') & (data['Green_to_work_with'].isnull()),'Green_to_work_with'] = data.Green_to_work_with.mean()
     data.loc[data.from_the_tee_box_mask,'Cat'] = 'Tee Box'
 

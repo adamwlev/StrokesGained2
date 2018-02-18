@@ -4,6 +4,7 @@ from scipy.sparse import csc_matrix,eye,bmat
 from scipy.sparse.linalg import eigs,gmres
 from scipy.stats import norm
 import multiprocessing,os,sys,pickle,warnings
+from functools import reduce
 
 if __name__=="__main__":
     def run_a_slice(tournaments):
@@ -15,7 +16,7 @@ if __name__=="__main__":
             try:
                 assert a/w[0].real
             except:
-                print 'alpha is negative %g' % (a/w[0].real,)
+                print('alpha is negative %g' % (a/w[0].real,))
             return a/w[0].real
 
         def solve(mat,mat_1,a,x_guess=None,x_guess1=None):
@@ -39,7 +40,7 @@ if __name__=="__main__":
 
         results = {}
         for tournament in tournaments:
-            tournament_group = tournament/block_size
+            tournament_group = int(tournament/block_size)
             min_tournament_group = max(0,tournament_group-window_size+1)
             max_tournament_group = tournament_group+1
             range_tournament_group = range(min_tournament_group,max_tournament_group)
@@ -70,7 +71,7 @@ if __name__=="__main__":
         return results
             
     def partition (lst, n):
-        return [lst[i::n] for i in xrange(n)]
+        return [lst[i::n] for i in range(n)]
 
     def flatten (nested_lst):
         return [item for sublst in nested_lst for item in sublst]
@@ -79,14 +80,14 @@ if __name__=="__main__":
         loader = np.load(filename)
         return csc_matrix((loader['data'],loader['indices'],loader['indptr']),shape = loader['shape'])
 
-    with open('PickleFiles/num_to_ind_shot.pkl','r') as pickleFile:
-        num_to_ind = pickle.load(pickleFile)
+    with open('PickleFiles/num_to_ind_shot.pkl','rb') as pickleFile:
+        num_to_ind = pickle.load(pickleFile,encoding='latin1')
 
     _,cat,e_d,e_t,w_d,a,beta,block_size,window_size = sys.argv
 
     if not os.path.exists('cats/cats_w-%s-%s-%s' % (e_d,e_t,w_d)):
         sys.exit('No cats found.')
-    print cat
+    print(cat)
     if not os.path.exists('ranks/ranks-%s-%s-%s-%s-%s' % (e_d,e_t,w_d,a,beta)):
         os.makedirs('ranks/ranks-%s-%s-%s-%s-%s' % (e_d,e_t,w_d,a,beta))
 
@@ -99,12 +100,12 @@ if __name__=="__main__":
     fn_g = 'cats/cats_w-%s-%s-%s/%s_' % (e_d,e_t,w_d,cat,) + '%d_g.npz'
     num_players = load_sparse_csc(fn % (0,)).shape[0]
     
-    num_cores = 64
+    num_cores = 3
     slices = partition(range(num_tournaments),num_cores)
     pool = multiprocessing.Pool(num_cores)
     results = pool.map(run_a_slice, slices)
     pool.close()
-    results = {key:value for d in results for key,value in d.iteritems()}
+    results = {key:value for d in results for key,value in d.items()}
     ranks = np.array([results[tourn][0] for tourn in range(num_tournaments)]).T
     reps = np.array([results[tourn][1] for tourn in range(num_tournaments)]).T
     np.save('ranks/ranks-%s-%s-%s-%g-%g/%s_ranks.npy' % (e_d,e_t,w_d,a,beta,cat),ranks)

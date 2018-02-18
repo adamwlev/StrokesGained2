@@ -16,14 +16,14 @@ def doit(data,cat,full=False):
     data['dist_error'] = data.Distance/12.0 - data.dist_using_coords
     before = len(data)
     data = data.dropna(subset=['dist_error'])
-    print 'dropped %d for dropping nulls in dist_error' % (before-len(data),)
+    print('dropped %d for dropping nulls in dist_error' % (before-len(data),))
     before = len(data)
     data = data[~((data.Cat=='Green') & (data.Distance_from_hole>130))]
-    print 'dropped %d for dropping green long shots' % (before-len(data),)
+    print('dropped %d for dropping green long shots' % (before-len(data),))
     before = len(data)
     data = data[data.dist_error.abs()<30]
-    print 'dropped %d for more than 10 percent shots' % (before-len(data),)
-    print len(data)
+    print('dropped %d for more than 10 percent shots' % (before-len(data),))
+    print(len(data))
     data = data.drop(['End_Z_Coordinate','dist_using_coords','dist_error',
                       'Start_X_Coordinate','End_X_Coordinate','Start_Y_Coordinate','End_Y_Coordinate'],axis=1)
 
@@ -33,7 +33,7 @@ def doit(data,cat,full=False):
                      'Fringe':1.0,'Bunker':.9,'Other':1.3}
         le = LabelEncoder()
         results = {}
-        print cat
+        print(cat)
         data_ = data[data.Cat==cat]
         groups = ['-'.join(map(str,tup)) for tup in data_[id_cols].values.tolist()]
         groups = le.fit_transform(groups)
@@ -98,7 +98,7 @@ def doit(data,cat,full=False):
                 bst = xgb.train(params,dtrain,num_round,watchlist,psuedo_huber,evalerror,
                                 early_stopping_rounds=early_stopping_rounds,verbose_eval=False)
                 trees.append(bst.best_iteration)
-                print bst.best_iteration
+                print(bst.best_iteration)
             return int(round(np.mean(trees)))
 
         cv = GroupKFold(n_splits=num_folds)
@@ -108,18 +108,18 @@ def doit(data,cat,full=False):
         groups_dict = {group:u for u,group in enumerate(set(groups))}
         perm = np.random.permutation(len(groups_dict))
         groups = [perm[groups_dict[group]] for group in groups]
-        print X.shape
+        print(X.shape)
 
         for u,(train,test) in enumerate(cv.split(X,y,groups)):
             dtrain = xgb.DMatrix(X[train],label=y[train])
             dtest = xgb.DMatrix(X[test])
             bst = xgb.train(params,dtrain,num_trees,obj=psuedo_huber)
             predictions = bst.predict(dtest)
-            print np.mean(predictions<1.0)
+            print(np.mean(predictions<1.0))
             predictions[predictions<1.0] = 1.0
             train_error = np.mean(np.abs(bst.predict(dtrain)-y[train]))
             test_error = np.mean(np.abs(predictions-y[test]))
-            print '*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error)
+            print('*** FOLD %d *** TRAIN_ERROR %g *** TEST_ERROR %g  ***' % (u,train_error,test_error))
             results.update({tuple(tup):pred for tup,pred in zip(data_.iloc[test][shot_id_cols].values,predictions)})
             bst.save_model('difficulty_evalutation_models/bst%d-%s.model' % (u,cat))
 

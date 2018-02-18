@@ -8,10 +8,10 @@ from collections import defaultdict
 cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate','tourn_num',
         'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#',
         'Player_Last_Name','Player_First_Name')
-data = pd.concat([pd.read_csv('data/%d.csv' % year,usecols=cols) for year in range(2003,2019)])
+data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year,usecols=cols) for year in range(2003,2019)])
 len_before = len(data)
 data = data.dropna(subset=['Strokes_Gained'])
-print 'Dropped %d shots for missing strokes gained.' % (len_before-len(data),)
+print('Dropped %d shots for missing strokes gained.' % (len_before-len(data),))
 
 e_d,e_t,w_d,p_mult = .8,.7,.8,1.9
 
@@ -58,10 +58,10 @@ p_map = {mini_cat:(p_mult/data.query(cats[mini_cat])['Strokes_Gained'].std()
                    if not np.isnan(data.query(cats[mini_cat])['Strokes_Gained'].std()) else 3.)
          for mini_cat in cats}
 
-print p_map
+print(p_map)
 
 def partition (lst, n):
-    return [lst[i::n] for i in xrange(n)]
+    return [lst[i::n] for i in range(n)]
 
 def run_a_slice(slice):
     def sigmoid(x,sig_p):
@@ -95,7 +95,7 @@ def run_a_slice(slice):
         return
 
     for tournament in slice:
-        print tournament
+        print(tournament)
         #tournament += run_a_slice.base_number_tournaments ## for incremental
         for big_cat in meta_cats:
             # if os.path.exists('cats/cats_w-%g-%g-%g/%s_%d.npz' % (e_d,e_t,w_d,big_cat,tournament)):
@@ -125,7 +125,7 @@ if not os.path.exists('cats/cats_w-%s-%s-%s' % (e_d,e_t,w_d)):
 e_d,e_t,w_d = tuple(map(float,[e_d,e_t,w_d]))
 
 with open('PickleFiles/num_to_ind_shot.pkl','rb') as pickle_file:
-    num_to_ind = pickle.load(pickle_file)
+    num_to_ind = pickle.load(pickle_file,encoding='latin1')
 
 for player_num in data['Player_#'].drop_duplicates():
     if player_num not in num_to_ind:
@@ -148,15 +148,15 @@ for tup in data[['Player_Last_Name','Player_First_Name','Player_Index']].values:
                     key = tuple([tup[0],tup[1]+''.join(['*' for _ in range(counter)])])
                     if key not in name_to_ind:
                         break
-                print tuple(tup[0:2]),'is duped, inserting', key
-                print name_to_ind[tuple(tup[0:2])],tup[2]
+                print(tuple(tup[0:2]),'is duped, inserting', key)
+                print(name_to_ind[tuple(tup[0:2])],tup[2])
                 name_to_ind[key] = tup[2]
     else:
         name_to_ind[tuple(tup[0:2])] = tup[2]
 with open('PickleFiles/name_to_ind_shot.pkl','wb') as pickle_file:
     pickle.dump(name_to_ind,pickle_file)
 n_players = len(num_to_ind)
-print n_players
+print(n_players)
 data.Time = data.Time.values/100 * 60 + data.Time.values%100
 
 n_tournaments = len(pd.unique(data.tourn_num))

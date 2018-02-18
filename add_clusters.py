@@ -6,13 +6,13 @@ import gc,sys
 def doit():
 	cols = ['Course_#','Round','Hole','last_shot_mask','Distance_from_hole',
 	        'Year','End_X_Coordinate','End_Y_Coordinate']
-	data = pd.concat([pd.read_csv('data/%d.csv' % year, usecols=cols)
-	                  for year in range(2003,2018)])
+	data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year, usecols=cols)
+	                  for year in range(2003,2019)])
 	results = {}
 	grouped = data.groupby(['Course_#','Hole'])
-	print len(grouped)
+	print(len(grouped))
 	for u,((course,hole),df) in enumerate(grouped):
-		if u%300==0: print u
+		if u%300==0: print(u)
 		closest_to_pin = pd.DataFrame(columns=df.columns)
 		for (year,round),df in df.groupby(['Year','Round'],as_index=False):
 			if df.last_shot_mask.sum()==0:
@@ -42,8 +42,8 @@ def doit():
 	
 	data = None
 	gc.collect()
-	for year in range(2003,2018):
-		data = pd.read_csv('data/%d.csv' % year)
+	for year in range(2003,2019):
+		data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % year)
 		data['Cluster'] = [results[tuple(tup)][0]
 		                   if tuple(tup) in results else 0
 		                   for tup in data[['Course_#','Hole','Year','Round']].values]
@@ -55,16 +55,15 @@ def doit():
 		                           for tup in data[['Course_#','Hole','Year','Round']].values]
 		len_before = len(data)
 		data = data[data.Cluster_Green_X!=0]
-		print 'dropping %d singleton shots' % (len_before-len(data),)
-		data.to_csv('data/%d.csv' % year, index=False)
-		data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
+		print('dropping %d singleton shots' % (len_before-len(data),))
+		data.to_csv('../GolfData/Shot/%d.csv.gz' % year, compression='gzip', index=False)
 		data = None
 		gc.collect()
 
 	cols = ['Course_#','Hole','from_the_tee_box_mask','Cluster',
 	        'Start_X_Coordinate','Start_Y_Coordinate']
-	data = pd.concat([pd.read_csv('data/%d.csv' % year, usecols=cols)
-	                  for year in range(2003,2018)])
+	data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year, usecols=cols)
+	                  for year in range(2003,2019)])
 	cluster_tee_box_dict = {index:tuple(row) for index,row in data.groupby(['Course_#','Hole','Cluster'])\
 																  .apply(lambda x: x.loc[x.from_the_tee_box_mask,
 							  						 									 ['Start_X_Coordinate',
@@ -72,8 +71,8 @@ def doit():
 							if not (np.isnan(row[0]) or np.isnan(row[1]))}
 	data = None
 	gc.collect()
-	for year in range(2003,2018):
-		data = pd.read_csv('data/%d.csv' % year)
+	for year in range(2003,2019):
+		data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % year)
 		data['Cluster_Tee_X'] = [cluster_tee_box_dict[tuple(tup)][0]
 								 if tuple(tup) in cluster_tee_box_dict else -999 
 								 for tup in data[['Course_#','Hole','Cluster']].values]
@@ -81,7 +80,6 @@ def doit():
 								 if tuple(tup) in cluster_tee_box_dict else -999 
 								 for tup in data[['Course_#','Hole','Cluster']].values]
 		data = data[(data.Cluster_Tee_X!=-999) & (data.Cluster_Tee_Y!=-999)]
-		data.to_csv('data/%d.csv' % year, index=False)
-		data.to_csv('data/%d.csv.gz' % year, compression='gzip', index=False)
+		data.to_csv('../GolfData/Shot/%d.csv.gz' % year, compression='gzip', index=False)
 		data = None
 		gc.collect()

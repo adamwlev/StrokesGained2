@@ -7,19 +7,22 @@ from produce_difficulty import doit as p3
 import gc
 
 def doit(years,fit_model=False):
-    for year in years:
-        data = pd.read_csv('data/rawdata/shot/%d.txt' % year,sep=';')
-        data = p1(data)
-        data = p2(data,16)
-        data.to_csv('data/%d.csv' % year, index=False)
-    data = pd.concat([pd.read_csv('data/%d.csv' % year, 
+    # for year in years:
+    #     data = pd.read_csv('../GolfData/Shot-Raw/%d.txt' % year,sep=';',encoding='latin1')
+    #     data = p1(data)
+    #     data = p2(data,16)
+    #     data.to_csv('../GolfData/Shot/%d.csv.gz' % year, index=False, compression='gzip')
+    
+    data = None
+    gc.collect()
+    data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year, 
                                   usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
                                            'Start_X_Coordinate','End_X_Coordinate',
                                            'Start_Y_Coordinate','End_Y_Coordinate',
                                            'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
                                            'Strokes_from_starting_location','Cat','Distance_from_hole',
                                            'Green_to_work_with','Real_Shots','from_the_tee_box_mask'])
-                      for year in years])
+                      for year in range(2003,2019)])
 
     cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
@@ -27,12 +30,12 @@ def doit(years,fit_model=False):
     
     results = {}
     for cat in cats:
-        print cat
+        print(cat)
         results_ = p3(data[data.Cat==cat].copy(),cat,full=fit_model)
-        results = {key:value for d in [results,results_] for key,value in d.iteritems()}
+        results = {key:value for d in [results,results_] for key,value in d.items()}
         # data = None
-        # gc.collect()
-        print len(results)
+        gc.collect()
+        print(len(results))
     
     # data = data.drop(['Start_X_Coordinate','End_X_Coordinate',
     #                   'Start_Y_Coordinate','End_Y_Coordinate',
@@ -40,7 +43,7 @@ def doit(years,fit_model=False):
     #                   'Strokes_from_starting_location','Cat','Distance_from_hole','Green_to_work_with'],axis=1)
 
     for year in years:
-        data = pd.read_csv('data/%d.csv' % (year,))
+        data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % (year,))
         data['Difficulty_Start'] = np.nan
         data['Difficulty_End'] = np.nan
         tee_difficulty = data[data.from_the_tee_box_mask].groupby(id_cols).Strokes_from_starting_location.mean()
@@ -59,5 +62,4 @@ def doit(years,fit_model=False):
     #   cols = ('Cat','Year','Round','Permanent_Tournament_#','Course_#','Hole','Start_X_Coordinate',
     #           'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
     #   data = p4(data[cols])
-        data.to_csv('data/%d.csv' % (year,),index=False)
-        data.to_csv('data/%d.csv.gz' % (year,),index=False,compression='gzip')
+        data.to_csv('../GolfData/Shot/%d.csv.gz' % (year,),index=False, compression='gzip')
