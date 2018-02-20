@@ -95,7 +95,7 @@ for cat in cats:
                lbs['player'].fit_transform(player_strings)]],format='csc')
     print(X.shape)
     with open('lbs/F-lbs-%s.pkl' % (cat,), 'wb') as pickle_file:
-        dill.dump(lbs, pickle_file)
+        dill.dump(lbs, pickle_file,protocol=2)
     dmat = xgb.DMatrix(X,label=y)
     bst = xgb.train(params,dmat,num_trees,obj=psuedo_huber)
     bst.save_model('difficulty_prediction_models/F-%s.model' % (cat,))

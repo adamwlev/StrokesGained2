@@ -13,8 +13,8 @@ beta_map = {'green5':'16',
             'green20':'16',
             'fairway0':'16',
             'bunker':'16',
-            'fairway300':'16',
             'rough90':'16',
+            'fairway300':'16',
             'tee3':'8'}
 
 params = '0.8-0.7-0.8-0.95'
