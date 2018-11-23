@@ -1,3 +1,5 @@
-Steps to reproduce all analysis available on request.
+[Research Paper](http://www.sloansportsconference.com/wp-content/uploads/2017/02/1685.pdf)
 
-Research paper is in /PaperStuff/Paper.pdf.
+[Flask App](http://digitalcaddy.io)
+
+[Other Repo (for flask app)](https://github.com/adamwlev/Golf)
