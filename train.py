@@ -57,7 +57,7 @@ def find_num_trees(X,y,params,eval_pct,course_strings,course_hole_strings,loc_st
     watchlist  = [(dtrain,'train'),(deval,'eval')]
     params['base_score'] = y_train.mean()
     bst = xgb.train(params,dtrain,num_round,watchlist,obj=psuedo_huber,
-                    early_stopping_rounds=early_stopping_rounds,verbose_eval=False) 
+                    early_stopping_rounds=early_stopping_rounds,verbose_eval=True) 
     return bst.best_iteration
 
 cats = ['Green','Fairway','Rough','Other','Bunker','Tee Box']

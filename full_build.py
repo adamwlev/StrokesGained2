@@ -4,7 +4,7 @@ from initial_processing import doit as p1
 from put_in_green_to_work_with import doit as p2
 from produce_difficulty import doit as p3
 #from add_skill_estimates import doit as p4
-import gc
+import gc, subprocess
 
 def doit(years,fit_model=False):
     # for year in years:
@@ -12,9 +12,8 @@ def doit(years,fit_model=False):
     #     data = p1(data)
     #     data = p2(data,16)
     #     data.to_csv('../GolfData/Shot/%d.csv.gz' % year, index=False, compression='gzip')
-    
-    data = None
-    gc.collect()
+    # data = None
+    # gc.collect()
     data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year, 
                                   usecols=['Year','Course_#','Permanent_Tournament_#','Round','Hole','Player_#',
                                            'Start_X_Coordinate','End_X_Coordinate',
@@ -22,7 +21,7 @@ def doit(years,fit_model=False):
                                            'Start_Z_Coordinate','End_Z_Coordinate','last_shot_mask','Distance',
                                            'Strokes_from_starting_location','Cat','Distance_from_hole',
                                            'Green_to_work_with','Real_Shots','from_the_tee_box_mask'])
-                      for year in range(2003,2019)])
+                      for year in years])
 
     cats = ['Green','Fairway','Intermediate Rough','Primary Rough','Fringe','Bunker','Other']
     id_cols = ['Year','Permanent_Tournament_#','Course_#','Round','Hole']
@@ -63,3 +62,8 @@ def doit(years,fit_model=False):
     #           'Start_Y_Coordinate','Distance_from_hole','Strokes_Gained','Time','Par_Value','Player_#')
     #   data = p4(data[cols])
         data.to_csv('../GolfData/Shot/%d.csv.gz' % (year,),index=False, compression='gzip')
+
+  subprocess.call(['python','fill_empty_dates.py'])
+  subprocess.call(['python','put_in_tourn_num.py'])
+  subprocess.call(['python','save_blocks.py'])
+  subprocess.call(['python','crawler.py'])

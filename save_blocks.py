@@ -154,7 +154,7 @@ for tup in data[['Player_Last_Name','Player_First_Name','Player_Index']].values:
     else:
         name_to_ind[tuple(tup[0:2])] = tup[2]
 with open('PickleFiles/name_to_ind_shot.pkl','wb') as pickle_file:
-    pickle.dump(name_to_ind,pickle_file)
+    pickle.dump(name_to_ind,pickle_file,protocol=2)
 n_players = len(num_to_ind)
 print(n_players)
 data.Time = data.Time.values/100 * 60 + data.Time.values%100

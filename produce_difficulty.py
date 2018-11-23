@@ -63,7 +63,7 @@ def doit(data,cat,full=False):
         X = bmat([[X,X_]],format='csc')
         y = data_.Strokes_from_starting_location.values
 
-        with open('lbs_evaluation/lbs-%s.pkl' % (cat,), 'wb') as pickle_file:
+        with open('lbs/lbs-%s.pkl' % (cat,), 'wb') as pickle_file:
             dill.dump(lbs, pickle_file)
 
         def psuedo_huber(preds, dtrain):
@@ -125,7 +125,7 @@ def doit(data,cat,full=False):
 
     else:
         results = {}
-        with open('lbs_evaluation/lbs-%s.pkl' % (cat,), 'rb') as pickle_file:
+        with open('lbs/lbs-%s.pkl' % (cat,), 'rb') as pickle_file:
             lbs = dill.load(pickle_file)
         data_ = data[data.Cat==cat]
         cols = ['Distance_from_hole','Start_Z_Coordinate']
@@ -153,5 +153,5 @@ def doit(data,cat,full=False):
                 if tuple(tup) not in results:
                     results[tuple(tup)] = []
                 results[tuple(tup)].append(pred)
-        results = {key:np.mean(value) for key,value in results.iteritems()}
+        results = {key:np.mean(value) for key,value in results.items()}
     return results

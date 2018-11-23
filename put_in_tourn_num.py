@@ -1,22 +1,22 @@
 import pandas as pd
+import numpy as np
+from datetime import datetime
 
 if __name__=='__main__':
-	cols = ('Year','Permanent_Tournament_#')
-	data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year,usecols=cols) for year in range(2003,2019)])
+    cols = ('Year','Permanent_Tournament_#','Date')
+    data = pd.concat([pd.read_csv('../GolfData/Shot/%d.csv.gz' % year,usecols=cols) for year in range(2003,2019)])
+    data.Date = pd.to_datetime(data.Date)
+    data = data.sort_values('Date')
+    start = datetime(2003,1,1,0)
+    data = data[data.Date>start]
 
-	cols = ('Year','Permanent_Tournament_#')
-	rawdata = pd.concat([pd.read_csv('../GolfData/Shot-Raw/%d.txt' % year, sep=';', 
-	                                 usecols=lambda x: x.strip().replace(' ','_') in cols)
-	                     for year in range(2003,2019)])
-	tourn_order = rawdata.drop_duplicates().values.tolist()
+    tourn_order = data[['Year','Permanent_Tournament_#']].drop_duplicates().values.tolist()
+    tourn_seq = {tuple(tup):u for u,tup in enumerate(tourn_order)}
 
-	data.columns = [col.replace('#','') for col in data.columns]
-	tourns_in_data = data[['Year','Permanent_Tournament_']].drop_duplicates().values.tolist()
-	tourns_in_data = set(tuple(tup) for tup in tourns_in_data)
-	tourn_order = [tup for tup in tourn_order if tuple(tup) in tourns_in_data]
-	tourn_seq = {tuple(tup):u for u,tup in enumerate(tourn_order)}
-
-	for year in range(2003,2019):
-		data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % (year,))
-		data['tourn_num'] = [tourn_seq[tuple(tup)] for tup in data[['Year','Permanent_Tournament_#']].values]
-		data.to_csv('../GolfData/Shot/%d.csv.gz' % (year,), compression='gzip', index=False)
+    for year in range(2003,2019):
+        data = pd.read_csv('../GolfData/Shot/%d.csv.gz' % (year,))
+        data['tourn_num'] = [tourn_seq[tuple(tup)]
+                             if tuple(tup) in tourn_seq else np.nan
+                             for tup in data[['Year','Permanent_Tournament_#']].values]
+        data = data.dropna(subset=['tourn_num'])
+        data.to_csv('../GolfData/Shot/%d.csv.gz' % (year,), compression='gzip', index=False)
